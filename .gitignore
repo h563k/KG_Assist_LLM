@@ -3,7 +3,7 @@
 test
 .idea
 *.ipynb
-data
+data/pand
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
