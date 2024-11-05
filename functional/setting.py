@@ -1,6 +1,6 @@
 import yaml
 import argparse
-
+import pandas as pd
 
 class ModelConfig:
     def __init__(self) -> None:
@@ -8,6 +8,7 @@ class ModelConfig:
         self.configs = self.config_read()
         self.liwc = self.configs['LIWC']
         self.llm = self.configs['LLM']
+        self.ollama = self.configs['OLLAMA']
 
     @staticmethod
     def config_read():
@@ -31,3 +32,10 @@ class ModelConfig:
     @property
     def cats_id(self):
         return self.configs['LIWC']['cats_id']
+
+    @property
+    def mbti_data(self):
+        data_path = self.configs['MBTI']['data_path']
+        print(data_path)
+        data = pd.read_csv(data_path)
+        return data

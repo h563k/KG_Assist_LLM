@@ -1,25 +1,25 @@
 LIWC:
     path: "data/LIWC/LIWC2015_English.dic"
     cats_id:
-      {
-          1: "[FUNC]",
-          30: "[AFFE]",
-          40: "[SOCI]",
-          50: "[COGP]",
-          60: "[PERC]",
-          70: "[BIOL]",
-          80: "[DRIV]",
-          100: "[RELA]",
-          120: "[INFO]",
-          110: "[WORK]",
-          111: "[LEIS]",
-          112: "[HOME]",
-          113: "[MONE]",
-          114: "[RELI]",
-          115: "[DEAT]",
-      }
+        {
+            1: "[FUNC]",
+            30: "[AFFE]",
+            40: "[SOCI]",
+            50: "[COGP]",
+            60: "[PERC]",
+            70: "[BIOL]",
+            80: "[DRIV]",
+            100: "[RELA]",
+            120: "[INFO]",
+            110: "[WORK]",
+            111: "[LEIS]",
+            112: "[HOME]",
+            113: "[MONE]",
+            114: "[RELI]",
+            115: "[DEAT]",
+        }
 LLM:
-    model_name: 'qwen2-72b-instruct'
+    model_name: "qwen2-72b-instruct"
     max_tokens: 1000
     temperature: 0
     presence_penalty: 1
@@ -38,3 +38,11 @@ LLM:
     spark:
         - 8181
         - fb1fe602-2c8e-4c08-941f-13170d2195d0
+
+OLLAMA:
+    model_name: "llama3.1:70b"
+    base_url: "http://192.168.28.5:11434"
+
+
+MBTI:
+    data_path: "data/MBTI/mbti.csv"
