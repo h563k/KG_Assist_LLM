@@ -11,9 +11,10 @@ def data_process(txt: str):
     txt = txt.split('|||')
     for message in txt:
         website = re.findall('(https://\S+|http://\S+)', message)
-        if website:
-            for web in website:
-                message = message.replace(web, '')
+        if not website:
+            continue
+        for web in website:
+            message = message.replace(web, '')
         temp.append(message)
     txt = ";".join(temp)
     return txt
