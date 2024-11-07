@@ -1,5 +1,3 @@
-from functional.llm_api import llm_local
-from functional.setting import ModelConfig
 from functional.llm_promot import mbti_analysis
 
 if __name__ == '__main__':
