@@ -1,10 +1,8 @@
 ### Python template
-# custom
-test
 .idea
 .vscode
+*.log
 *.ipynb
 data/pand
-*.log
-# Byte-compiled / optimized / DLL files
+test
 __pycache__/
