@@ -27,11 +27,10 @@ def promot_analysis(promot, model_name, stream=False):
     return result
 
 
-def mbti_analysis(model_name=config.ollama['model_name'], stream=False) -> str:
+def mbti_analysis(model_name=config.ollama['model_name'], stream=False, lens = -1) -> str:
     temp = []
     for i, (mbti_type, txt) in enumerate(config.mbti_data.values):
         txt = data_process(txt)
-        print(txt)
         promot_semantic = f"""**Please provide a concise analysis of the semantic content of the following text:**
 
         ### Text for Analysis
@@ -57,7 +56,7 @@ def mbti_analysis(model_name=config.ollama['model_name'], stream=False) -> str:
         {inguistic}"""
         mbti_type_predict = promot_analysis(promot_mbti, model_name, stream)
         temp.append([i, mbti_type, mbti_type_predict])
-        if i == 2:
+        if i == lens:
             break
-    print(temp)
+    return temp
         
