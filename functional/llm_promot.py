@@ -51,7 +51,7 @@ def mbti_analysis(model_name=config.ollama['model_name'], stream=False, lens=-1)
         semantic = promot_analysis(promot_semantic, model_name, stream)
         sentiment = promot_analysis(promot_sentiment, model_name, stream)
         inguistic = promot_analysis(promot_inguistic, model_name, stream)
-        promot_mbti = f"""**Predict the MBTI personality type(s) of the individual(s) based on the text. Provide only the answer without the analysis.**
+        promot_mbti = f"""**Predict the MBTI personality type(s) of the individual(s) based on the text. Provide only the answer without the analysis:**
         {semantic}
         {sentiment}
         {inguistic}"""
