@@ -3,6 +3,7 @@ from functional.setting import ModelConfig
 from functional.llm_promot import mbti_analysis
 
 if __name__ == '__main__':
+    # mbti_analysis(model_name='qwen2.5:72b-instruct-q4_0')
     mbti_analysis()
 
     # system_prompt = '请用中文回答问题'
