@@ -1,7 +1,7 @@
 import re
 from functional.llm_api import llm_local
 from functional.setting import ModelConfig
-
+from functional.standard_log import log_to_file
 
 config = ModelConfig()
 
@@ -26,8 +26,8 @@ def promot_analysis(promot, model_name, stream=False):
                        stream=stream)
     return result
 
-
-def mbti_analysis(model_name=config.ollama['model_name'], stream=False, lens = -1) -> str:
+@log_to_file
+def mbti_analysis(model_name=config.ollama['model_name'], stream=False, lens=-1) -> str:
     temp = []
     for i, (mbti_type, txt) in enumerate(config.mbti_data.values):
         txt = data_process(txt)
@@ -59,4 +59,3 @@ def mbti_analysis(model_name=config.ollama['model_name'], stream=False, lens = -
         if i == lens:
             break
     return temp
-        
