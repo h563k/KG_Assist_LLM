@@ -2,8 +2,8 @@ import re
 from http import HTTPStatus
 import dashscope
 from openai import OpenAI
-from functional.setting import ModelConfig
-from functional.standard_log import log_to_file
+from functionals.setting import ModelConfig
+from functionals.standard_log import log_to_file
 
 config = ModelConfig()
 
