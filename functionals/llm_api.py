@@ -1,6 +1,3 @@
-import re
-from http import HTTPStatus
-import dashscope
 from openai import OpenAI
 from functionals.setting import ModelConfig
 from functionals.standard_log import log_to_file
@@ -34,7 +31,7 @@ def openai_response(system_prompt, prompt, model_types, client: OpenAI, stream=F
 
 @log_to_file
 def llm_free(system_prompt, prompt, model_types, stream=False) -> str:
-    port, token = getattr(config, model_types)
+    port, token = config.llm[model_types]
     header = {
         "Content-types": "application/json",
         "Authorization": f"Bearer {token}"

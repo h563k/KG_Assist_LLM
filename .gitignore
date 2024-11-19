@@ -5,4 +5,5 @@
 *.ipynb
 data/pand
 test
+.cache
 __pycache__/
