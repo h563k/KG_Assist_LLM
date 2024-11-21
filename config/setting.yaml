@@ -25,6 +25,7 @@ LLM:
     presence_penalty: 1
     frequency_penalty: 1
     seed: 42
+    api_key: sk-Z9IT6XTbuhNqeWeQwtFj5vlM1NRXsvQ59XObmYU4UIzosvD5
     # tongyi_sso_ticket
     qwen:
         - 8178
@@ -40,9 +41,8 @@ LLM:
         - fb1fe602-2c8e-4c08-941f-13170d2195d0
 
 OLLAMA:
-    model_name: "llama3.1:70b"
+    model_name: "qwen2.5:72b-instruct-q4_0"
     base_url: "http://192.168.28.5:11434"
-
 
 MBTI:
     data_path: "data/MBTI/mbti.csv"
