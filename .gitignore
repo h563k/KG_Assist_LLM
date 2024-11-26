@@ -2,7 +2,6 @@
 .idea
 .vscode
 *.log
-*.ipynb
 data/pand
 test
 .cache
