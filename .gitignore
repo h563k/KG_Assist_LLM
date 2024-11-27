@@ -6,5 +6,5 @@ data/pand
 test
 .cache
 learning/coding
-/opt/project/KG_Assist_LLM/config/setting.yaml
+config
 __pycache__/
