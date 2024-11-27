@@ -25,27 +25,27 @@ LLM:
     presence_penalty: 1
     frequency_penalty: 1
     seed: 42
-    api_key: sk-Z9IT6XTbuhNqeWeQwtFj5vlM1NRXsvQ59XObmYU4UIzosvD5
+    api_key: sk-
     # tongyi_sso_ticket
     qwen:
         - 8178
-        - sBy1ogROHqapzX0CcdoyjhP$Epe3HVyn_C05uIKcu_m8RWbNcpEM**IXaA1XueubuLzpf8Gz1g_n0
+        - xxx
     kimi:
         - 8179
-        - eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJ1c2VyLWNlbnRlciIsImV4cCI6MTczMjgwNjc0MCwiaWF0IjoxNzI1MDMwNzQwLCJqdGkiOiJjcjh1Mmw2Y3A3ZjZxM2xmY2E3ZyIsInR5cCI6InJlZnJlc2giLCJzdWIiOiJjcjg5am9pbG5sOTBydGowZjRpZyIsInNwYWNlX2lkIjoiY3I4OWpvaWxubDkwcnRqMGY0aTAiLCJhYnN0cmFjdF91c2VyX2lkIjoiY3I4OWpvaWxubDkwcnRqMGY0aGcifQ.8mPMnBj5CmSKII4j95UIrhxMxpU6fDRtnCQ82c_We5IlJydnBh1_n_uyHQddVtSe7ua8yxhETOgfg_XLuqhJig
+        - xxx
     glm:
         - 8180
-        - eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjNDc2MDRmMzBiMTU0NDg3YjQwZTgyMWY2NGYyN2Y5ZCIsImV4cCI6MTc0MDU4MzU2MiwibmJmIjoxNzI1MDMxNTYyLCJpYXQiOjE3MjUwMzE1NjIsImp0aSI6ImQzOThjMDc0MjBkZTQ1OTA5NTYyMDk0MTg2N2ZlNGUxIiwidWlkIjoiNjZkMGFkMzY1NmY3YThkM2YyYWMzYTQ2IiwidHlwZSI6InJlZnJlc2gifQ.0CWuOejBjGGZYJbh2VFHevanx4noTPmycj2eJV46bWM
+        - xxx
     spark:
         - 8181
-        - fb1fe602-2c8e-4c08-941f-13170d2195d0
+        - xxx
 
 OLLAMA:
     model_name: "qwen2.5:72b-instruct-q4_0"
     base_url: "http://192.168.28.5:11434"
 
 OpenAIHK:
-    api_key: "hk-iztiyd100004751967e498e4fa6c600bff77a4a20064f5b8"
+    api_key: "hk-"
 
 MBTI:
     data_path: "data/MBTI/mbti.csv"
