@@ -6,4 +6,5 @@ data/pand
 test
 .cache
 learning/coding
+setting.yaml
 __pycache__/

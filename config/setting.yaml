@@ -44,5 +44,8 @@ OLLAMA:
     model_name: "qwen2.5:72b-instruct-q4_0"
     base_url: "http://192.168.28.5:11434"
 
+OpenAIHK:
+    api_key: "hk-iztiyd100004751967e498e4fa6c600bff77a4a20064f5b8"
+
 MBTI:
     data_path: "data/MBTI/mbti.csv"
