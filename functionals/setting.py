@@ -9,6 +9,7 @@ class ModelConfig:
         self.liwc = self.configs['LIWC']
         self.llm = self.configs['LLM']
         self.ollama = self.configs['OLLAMA']
+        self.openaiHk = self.configs['OpenAIHK']
 
     @staticmethod
     def config_read():
