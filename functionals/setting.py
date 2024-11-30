@@ -1,5 +1,5 @@
+import os
 import yaml
-import argparse
 import pandas as pd
 
 
@@ -28,6 +28,8 @@ class ModelConfig:
     @property
     def mbti_data(self):
         data_path = self.configs['MBTI']['data_path']
-        print(data_path)
+        file_path = os.path.abspath(__file__)
+        file_path = os.path.dirname(os.path.dirname(file_path))
+        data_path = os.path.join(file_path, data_path)
         data = pd.read_csv(data_path)
         return data
