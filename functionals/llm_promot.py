@@ -1,6 +1,6 @@
 import re
 from functionals.llm_api import llm_local
-from functionals.setting import ModelConfig
+from functionals.system_config import ModelConfig
 from functionals.standard_log import log_to_file
 
 config = ModelConfig()

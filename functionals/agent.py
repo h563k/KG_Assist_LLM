@@ -1,5 +1,5 @@
 import autogen
-from functionals.setting import ModelConfig
+from functionals.system_config import ModelConfig
 from functionals.llm_promot import data_process
 from functionals.standard_log import log_to_file
 

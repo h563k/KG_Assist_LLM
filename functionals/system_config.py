@@ -5,11 +5,14 @@ import pandas as pd
 
 class ModelConfig:
     def __init__(self) -> None:
+        self.file_path = os.path.abspath(__file__)
+        self.file_path = os.path.dirname(os.path.dirname(self.file_path))
         self.configs = self.config_read()
         self.liwc = self.configs['LIWC']
         self.llm = self.configs['LLM']
         self.ollama = self.configs['OLLAMA']
-        self.openaiHk = self.configs['OpenAIHK']
+        self.OpenAI = self.configs['OpenAIHK']
+
 
     @staticmethod
     def config_read():
@@ -28,8 +31,6 @@ class ModelConfig:
     @property
     def mbti_data(self):
         data_path = self.configs['MBTI']['data_path']
-        file_path = os.path.abspath(__file__)
-        file_path = os.path.dirname(os.path.dirname(file_path))
-        data_path = os.path.join(file_path, data_path)
+        data_path = os.path.join(self.file_path, data_path)
         data = pd.read_csv(data_path)
         return data
