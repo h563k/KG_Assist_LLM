@@ -5,18 +5,41 @@ from functionals.standard_log import log_to_file
 
 
 class MbtiChats:
-    def __init__(self, task, max_round=3, nums='five', openai_type='openai_hk') -> None:
+    def __init__(self, task, max_round=2, nums='five', openai_type='openai_hk') -> None:
+        __doc__ = """
+        :param task: Scraped user text for analysis of possible MBTI personality type..
+        :param max_round: Number of rounds for free discussion among three agents.
+        :param nums: The maximum number of MBTI personality types each agent is allowed to predict, suggested using words rather than Arabic numerals d.
+        :param openai_type: The type of OpenAI API to use, hk or origin.
+        """
         self.nums = nums
         self.task = self.data_process(task)
         self.llm_config = self.env_init(openai_type)
-        self.chat_result = {'origin_task': task}
+        self.chat_result = {'origin_task': self.task}
         self.agent_dict = {
             "user_proxy": self.user_proxy(),
             "Semantic": self.create_agent("Semantic"),
             "Sentiment": self.create_agent("Sentiment"),
             "Linguistic": self.create_agent("Linguistic"),
+            "Commentator": self.commentator()
         }
+        self.run(max_round)
         self.save_result()
+
+    @staticmethod
+    def data_process(txt: str):
+        temp = []
+        txt = txt.split('|||')
+        for message in txt:
+            website = re.findall('(https://\S+|http://\S+)', message)
+            if not website:
+                temp.append(message)
+                continue
+            for web in website:
+                message = message.replace(web, '')
+            temp.append(message) if message else None
+        txt = "\n".join(temp)
+        return txt
 
     def env_init(self, openai_type) -> None:
         config = ModelConfig()
@@ -45,20 +68,15 @@ class MbtiChats:
             "clear_history": True
         }
 
-    @staticmethod
-    def data_process(txt: str):
-        temp = []
-        txt = txt.split('|||')
-        for message in txt:
-            website = re.findall('(https://\S+|http://\S+)', message)
-            if not website:
-                temp.append(message)
-                continue
-            for web in website:
-                message = message.replace(web, '')
-            temp.append(message) if message else None
-        txt = "\n".join(temp)
-        return txt
+    def user_proxy(self):
+        agent = ConversableAgent(
+            name="MessageForwarderAgent",
+            system_message="You are a message forwarder, and your task is to forward the received messages unaltered to the next recipient.",
+            llm_config=False,  # 不使用LLM生成回复
+            code_execution_config=False,  # 禁用代码执行
+            human_input_mode="NEVER",  # 不请求人工输入
+        )
+        return agent
 
     def create_agent(self, user_name):
         agent = ConversableAgent(
@@ -70,15 +88,15 @@ class MbtiChats:
         )
         return agent
 
-    def user_proxy(self):
-        agent = ConversableAgent(
-            name="MessageForwarderAgent",
-            system_message="You are a message forwarder, and your task is to forward the received messages unaltered to the next recipient.",
-            llm_config=False,  # 不使用LLM生成回复
-            code_execution_config=False,  # 禁用代码执行
-            human_input_mode="NEVER",  # 不请求人工输入
+    def commentator(self):
+        Commentator = ConversableAgent(
+            name="Commentator",
+            llm_config=self.llm_config,
+            system_message="""You are an MBTI personality expert. Please read a piece of text posted by a user, as well as the conclusions given by three experts, and select the most likely MBTI personality type from the conclusions based on the original text. Provide the answer directly without analysis.""",
+            description="""Review Expert, to conduct the final analysis and summary.""",
+            human_input_mode="NEVER",
         )
-        return agent
+        return Commentator
 
     def first_chats(self):
         first_chats_list = [
@@ -94,7 +112,7 @@ class MbtiChats:
         return first_chats_list
 
     def circle_chat(self, chats, nums, max_depth=3):
-        if nums >= max_depth:
+        if nums > max_depth:
             return
         # 重复一遍
         chat_prompts = []
@@ -116,6 +134,23 @@ class MbtiChats:
         ]
 
         return self.circle_chat(next_chats, nums + 1, max_depth)
+
+    def final_predict(self, nums):
+        final_predict = f"""### Original text of the user's statement.
+{self.task}\n\n
+### Experts' predictions
+{self.chat_result[f'round_{nums}']}""".replace(', just for reference, you can stick to your own opinion:', ':')
+        final_predict = initiate_chats([
+            self.chat_unit(
+                self.agent_dict['user_proxy'], self.agent_dict['Commentator'], final_predict)
+        ])
+        agent_result = final_predict[0].chat_history[1]
+        self.chat_result['final_predict'] = agent_result
+
+    def run(self, max_round):
+        first_chats = self.first_chats()
+        self.circle_chat(first_chats, 1, max_round)
+        self.final_predict(max_round)
 
     @log_to_file
     def save_result(self):
