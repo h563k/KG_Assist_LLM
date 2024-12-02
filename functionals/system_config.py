@@ -11,7 +11,7 @@ class ModelConfig:
         self.liwc = self.configs['LIWC']
         self.llm = self.configs['LLM']
         self.ollama = self.configs['OLLAMA']
-        self.OpenAI = self.configs['OpenAIHK']
+        self.OpenAI = self.configs['OpenAI']
 
 
     @staticmethod
