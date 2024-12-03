@@ -5,17 +5,18 @@ from functionals.standard_log import log_to_file
 
 
 class MbtiChats:
-    def __init__(self, task, nums='five', openai_type='openai_hk') -> None:
+    def __init__(self, max_round=3, nums='five', openai_type='openai_origin', model="gpt-3.5-turbo") -> None:
         """
-        :param task: Scraped user text for analysis of possible MBTI personality type..
         :param max_round: Number of rounds for free discussion among three agents.
         :param nums: The maximum number of MBTI personality types each agent is allowed to predict, suggested using words rather than Arabic numerals d.
         :param openai_type: The type of OpenAI API to use, hk or origin.
+        :param model: openai model type, gpt-3.5-turbo or gpt-4
         """
         self.nums = nums
-        self.task = self.data_process(task)
+        self.max_round = max_round
+        self.model = model
         self.llm_config = self.env_init(openai_type)
-        self.chat_result = {'origin_task': self.task}
+        self.chat_result = {}
         self.agent_dict = {
             "user_proxy": self.user_proxy(),
             "Semantic": self.create_agent("Semantic"),
@@ -23,6 +24,22 @@ class MbtiChats:
             "Linguistic": self.create_agent("Linguistic"),
             "Commentator": self.commentator()
         }
+
+    def env_init(self, openai_type) -> None:
+        config = ModelConfig()
+        openai_config = config.OpenAI['openai_origin']
+        openai_config = config.OpenAI[openai_type]
+        config_list = [
+            {
+                "model": self.model,
+                "base_url": openai_config['base_url'],
+                "api_type": "openai",
+                "api_key": openai_config['api_key'],
+                "temperature": 0.2,
+            }
+        ]
+        llm_config = {"config_list": config_list}
+        return llm_config
 
     @staticmethod
     def data_process(txt: str):
@@ -38,22 +55,6 @@ class MbtiChats:
             temp.append(message) if message else None
         txt = "\n".join(temp)
         return txt
-
-    def env_init(self, openai_type) -> None:
-        config = ModelConfig()
-        openai_config = config.OpenAI['openai_origin']
-        openai_config = config.OpenAI[openai_type]
-        config_list = [
-            {
-                "model": "gpt-3.5-turbo",
-                "base_url": openai_config['base_url'],
-                "api_type": "openai",
-                "api_key": openai_config['api_key'],
-                "temperature": 0.2,
-            }
-        ]
-        llm_config = {"config_list": config_list}
-        return llm_config
 
     @staticmethod
     def chat_unit(sender, recipient, message):
@@ -96,11 +97,11 @@ class MbtiChats:
         )
         return Commentator
 
-    def first_chats(self):
+    def first_chats(self, task):
         first_chats_list = [
             initiate_chats([
                 self.chat_unit(
-                    self.agent_dict['user_proxy'], first_chat, self.task),
+                    self.agent_dict['user_proxy'], first_chat, task),
             ]) for first_chat in [self.agent_dict['Semantic'], self.agent_dict['Sentiment'], self.agent_dict['Linguistic']]
         ]
         temp = []
@@ -109,7 +110,7 @@ class MbtiChats:
         self.chat_result['first_chats'] = temp
         return first_chats_list
 
-    def circle_chat(self, chats, nums, max_depth=3):
+    def circle_chat(self, task, chats, nums, max_depth=3):
         if nums > max_depth:
             return
         # 重复一遍
@@ -127,15 +128,15 @@ class MbtiChats:
         next_chats = [
             initiate_chats([
                 self.chat_unit(self.agent_dict['user_proxy'], agent,
-                               f"""{self.task}\n\n{combined_prompt}""")
+                               f"""{task}\n\n{combined_prompt}""")
             ]) for agent in [self.agent_dict['Semantic'], self.agent_dict['Sentiment'], self.agent_dict['Linguistic']]
         ]
 
-        return self.circle_chat(next_chats, nums + 1, max_depth)
+        return self.circle_chat(task, next_chats, nums + 1, max_depth)
 
-    def final_predict(self, nums):
+    def final_predict(self, nums, task):
         final_predict = f"""### Original text of the user's statement.
-{self.task}\n\n
+{task}\n\n
 ### Experts' predictions
 {self.chat_result[f'round_{nums}']}""".replace(', just for reference, you can stick to your own opinion:', ':')
         final_predict = initiate_chats([
@@ -146,8 +147,10 @@ class MbtiChats:
         self.chat_result['final_predict'] = agent_result
 
     @log_to_file
-    def run(self, max_round):
-        first_chats = self.first_chats()
-        self.circle_chat(first_chats, 1, max_round)
-        self.final_predict(max_round)
+    def run(self, task):
+        task = self.data_process(task)
+        self.chat_result['origin_task'] = task
+        first_chats = self.first_chats(task)
+        self.circle_chat(task, first_chats, 1, self.max_round)
+        self.final_predict(self.max_round, task)
         return self.chat_result
