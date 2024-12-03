@@ -4,10 +4,11 @@ from functionals.system_config import ModelConfig
 from functionals.standard_log import log_to_file
 
 config = ModelConfig()
+mbti = config.mbti
 
 
 class MbtiChats:
-    def __init__(self, max_round=3, nums='five', openai_type='openai_origin', model="gpt-3.5-turbo") -> None:
+    def __init__(self, max_round=mbti['max_round'], nums=mbti['nums'], openai_type=mbti['openai_type'], model=mbti['model']) -> None:
         """
         :param max_round: Number of rounds for free discussion among three agents.
         :param nums: The maximum number of MBTI personality types each agent is allowed to predict, suggested using words rather than Arabic numerals d.

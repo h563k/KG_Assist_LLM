@@ -10,6 +10,7 @@ class ModelConfig:
         self.configs = self.config_read()
         self.llm = self.configs['LLM']
         self.OpenAI = self.configs['OpenAI']
+        self.mbti = self.configs['MBTI']
 
     def config_read(self):
         file_path = os.path.join(self.file_path, 'config/setting.yaml')
@@ -27,7 +28,7 @@ class ModelConfig:
 
     @property
     def mbti_data(self):
-        data_path = self.configs['MBTI']['data_path']
+        data_path = self.mbti['data_path']
         data_path = os.path.join(self.file_path, data_path)
         data = pd.read_csv(data_path)
         return data
