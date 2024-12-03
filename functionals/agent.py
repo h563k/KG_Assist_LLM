@@ -3,6 +3,8 @@ from autogen import initiate_chats, ConversableAgent
 from functionals.system_config import ModelConfig
 from functionals.standard_log import log_to_file
 
+config = ModelConfig()
+
 
 class MbtiChats:
     def __init__(self, max_round=3, nums='five', openai_type='openai_origin', model="gpt-3.5-turbo") -> None:
@@ -26,7 +28,7 @@ class MbtiChats:
         }
 
     def env_init(self, openai_type) -> None:
-        config = ModelConfig()
+
         openai_config = config.OpenAI['openai_origin']
         openai_config = config.OpenAI[openai_type]
         config_list = [
