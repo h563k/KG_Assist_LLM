@@ -1,4 +1,5 @@
 import re
+import openai
 from autogen import initiate_chats, ConversableAgent
 from functionals.system_config import ModelConfig
 from functionals.standard_log import log_to_file
@@ -10,15 +11,20 @@ mbti = config.mbti
 class MbtiChats:
     def __init__(self, max_round=mbti['max_round'], nums=mbti['nums'], openai_type=mbti['openai_type'], model=mbti['model']) -> None:
         """
-        :param max_round: Number of rounds for free discussion among three agents.
-        :param nums: The maximum number of MBTI personality types each agent is allowed to predict, suggested using words rather than Arabic numerals d.
+        :param max_round: Number of rounds for free discussion among three agents. 
+        专家讨论的轮数
+        :param nums: The maximum number of MBTI personality types each agent is allowed to predict, suggested using words rather than Arabic numerals d. 
+        专家每轮预测的性格数量上限
         :param openai_type: The type of OpenAI API to use, hk or origin.
+        代理切换
         :param model: openai model type, gpt-3.5-turbo or gpt-4
+        模型选择
         """
+        self.llm_config,  model_list = self.env_init(openai_type)
+        assert model in model_list, f"{model} is not in the list of available models: {model_list}"
         self.nums = nums
         self.max_round = max_round
         self.model = model
-        self.llm_config = self.env_init(openai_type)
         self.chat_result = {}
         self.agent_dict = {
             "user_proxy": self.user_proxy(),
@@ -32,17 +38,22 @@ class MbtiChats:
 
         openai_config = config.OpenAI['openai_origin']
         openai_config = config.OpenAI[openai_type]
+        api_key = openai_config['api_key']
+        base_url = openai_config['base_url']
         config_list = [
             {
                 "model": self.model,
-                "base_url": openai_config['base_url'],
+                "base_url": base_url,
                 "api_type": "openai",
-                "api_key": openai_config['api_key'],
+                "api_key": api_key,
                 "temperature": 0.2,
             }
         ]
         llm_config = {"config_list": config_list}
-        return llm_config
+        openai.api_key = openai_config['api_key']
+        openai.base_url = base_url
+        model_list = [x.id for x in openai.models.list()]
+        return llm_config, model_list
 
     @staticmethod
     def data_process(txt: str):
