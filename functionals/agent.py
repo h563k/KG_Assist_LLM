@@ -20,11 +20,12 @@ class MbtiChats:
         :param model: openai model type, gpt-3.5-turbo or gpt-4
         模型选择
         """
-        self.llm_config,  model_list = self.env_init(openai_type)
-        assert model in model_list, f"{model} is not in the list of available models: {model_list}"
+        assert model in ['gpt-3.5-turbo',
+                         'gpt-4'], "Please select the correct model type."
+        self.model = model
+        self.llm_config = self.env_init(openai_type)
         self.nums = nums
         self.max_round = max_round
-        self.model = model
         self.chat_result = {}
         self.agent_dict = {
             "user_proxy": self.user_proxy(),
@@ -50,10 +51,7 @@ class MbtiChats:
             }
         ]
         llm_config = {"config_list": config_list}
-        openai.api_key = openai_config['api_key']
-        openai.base_url = base_url
-        model_list = [x.id for x in openai.models.list()]
-        return llm_config, model_list
+        return llm_config
 
     @staticmethod
     def data_process(txt: str):
