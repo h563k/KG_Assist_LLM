@@ -5,8 +5,8 @@ from functionals.standard_log import log_to_file
 
 
 class MbtiChats:
-    def __init__(self, task, max_round=2, nums='five', openai_type='openai_hk') -> None:
-        __doc__ = """
+    def __init__(self, task, nums='five', openai_type='openai_hk') -> None:
+        """
         :param task: Scraped user text for analysis of possible MBTI personality type..
         :param max_round: Number of rounds for free discussion among three agents.
         :param nums: The maximum number of MBTI personality types each agent is allowed to predict, suggested using words rather than Arabic numerals d.
@@ -23,8 +23,6 @@ class MbtiChats:
             "Linguistic": self.create_agent("Linguistic"),
             "Commentator": self.commentator()
         }
-        self.run(max_round)
-        self.save_result()
 
     @staticmethod
     def data_process(txt: str):
@@ -147,11 +145,9 @@ class MbtiChats:
         agent_result = final_predict[0].chat_history[1]
         self.chat_result['final_predict'] = agent_result
 
+    @log_to_file
     def run(self, max_round):
         first_chats = self.first_chats()
         self.circle_chat(first_chats, 1, max_round)
         self.final_predict(max_round)
-
-    @log_to_file
-    def save_result(self):
         return self.chat_result
