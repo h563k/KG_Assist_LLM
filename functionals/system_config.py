@@ -8,7 +8,6 @@ class ModelConfig:
         self.file_path = os.path.abspath(__file__)
         self.file_path = os.path.dirname(os.path.dirname(self.file_path))
         self.configs = self.config_read()
-        self.llm = self.configs['LLM']
         self.OpenAI = self.configs['OpenAI']
         self.mbti = self.configs['MBTI']
 

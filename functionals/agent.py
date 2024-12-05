@@ -1,4 +1,5 @@
 import re
+import backoff
 import openai
 from autogen import initiate_chats, ConversableAgent
 from functionals.system_config import ModelConfig
@@ -36,21 +37,17 @@ class MbtiChats:
         }
 
     def env_init(self, openai_type) -> None:
-
         openai_config = config.OpenAI['openai_origin']
         openai_config = config.OpenAI[openai_type]
-        api_key = openai_config['api_key']
-        base_url = openai_config['base_url']
         config_list = [
             {
                 "model": self.model,
-                "base_url": base_url,
                 "api_type": "openai",
-                "api_key": api_key,
-                "temperature": 0.2,
+                "base_url": openai_config['base_url'],
+                "api_key": openai_config['api_key'],
             }
         ]
-        llm_config = {"config_list": config_list}
+        llm_config = {"config_list": config_list, }
         return llm_config
 
     @staticmethod
@@ -149,15 +146,24 @@ class MbtiChats:
     def final_predict(self, nums, task):
         final_predict = f"""### Original text of the user's statement.
 {task}\n\n
-### Experts' predictions
+### Experts' conclusions
 {self.chat_result[f'round_{nums}']}""".replace(', just for reference, you can stick to your own opinion:', ':')
         final_predict = initiate_chats([
             self.chat_unit(
                 self.agent_dict['user_proxy'], self.agent_dict['Commentator'], final_predict)
         ])
         agent_result = final_predict[0].chat_history[1]
-        self.chat_result['final_predict'] = agent_result
+        self.chat_result['commentator_response'] = agent_result
 
+    def result_clean(self):
+        print(self.chat_result['commentator_response'])
+        mbti_type = re.findall(r"[E|I][S|N][T|F][J|P]",
+                               self.chat_result['commentator_response']['content'])
+        if len(mbti_type) > 1:
+            mbti_type = mbti_type[0]
+        self.chat_result['final_predict'] = mbti_type[0]
+
+    @backoff.on_exception(backoff.expo, openai.RateLimitError)
     @log_to_file
     def run(self, task):
         task = self.data_process(task)
@@ -165,4 +171,5 @@ class MbtiChats:
         first_chats = self.first_chats(task)
         self.circle_chat(task, first_chats, 1, self.max_round)
         self.final_predict(self.max_round, task)
+        self.result_clean()
         return self.chat_result

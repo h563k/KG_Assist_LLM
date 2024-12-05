@@ -1,13 +1,17 @@
+import os
 import logging
 import functools
 
 
 def log_to_file(func):
+    file_path = os.path.abspath(__file__)
+    file_path = os.path.dirname(os.path.dirname(file_path))
+    file_path = os.path.join(file_path, 'logs')
 
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
         # 获取函数名称作为日志文件名的基础
-        log_filename = f"./logs/{func.__name__}.log"
+        log_filename = f"{file_path}/{func.__name__}.log"
 
         # 配置日志
         logging.basicConfig(
