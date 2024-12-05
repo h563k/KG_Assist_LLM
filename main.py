@@ -1,4 +1,4 @@
 from functionals.analysis import mbti_analysis
 
 if __name__ == '__main__':
-    mbti_analysis(start=30, end=130)
+    mbti_analysis(start=1100, end=1250)
