@@ -1,3 +1,4 @@
+import os
 import re
 import backoff
 import openai
@@ -37,6 +38,14 @@ class MbtiChats:
         }
 
     def env_init(self, openai_type) -> None:
+        os.environ['http_proxy'] = config.OpenAI['proxy']
+        os.environ['https_proxy'] = config.OpenAI['proxy']
+        os.environ['ftp_proxy'] = config.OpenAI['proxy']
+        os.environ['no_proxy'] = '127.0.0.1,localhost'
+        os.environ['HTTP_PROXY'] = config.OpenAI['proxy']
+        os.environ['HTTPS_PROXY'] = config.OpenAI['proxy']
+        os.environ['FTP_PROXY'] = config.OpenAI['proxy']
+        os.environ['NO_PROXY'] = '127.0.0.1,localhost'
         openai_config = config.OpenAI['openai_origin']
         openai_config = config.OpenAI[openai_type]
         config_list = [

@@ -3,5 +3,6 @@ langchain_ollama
 pandas
 openai
 pyautogen
-
+scipy
+backoff
 # pip install "flaml[automl]"   
