@@ -2,6 +2,7 @@
 .idea
 .vscode
 *.log
+*.zip
 data/pand
 test
 .cache

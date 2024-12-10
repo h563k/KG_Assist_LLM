@@ -15,9 +15,9 @@ def mbti_analysis(start, end):
         mbti.run(task)
         result.append([i, mbti_real, mbti.chat_result['final_predict']])
     count = np.zeros(4)
-    for nums, mbti_real, mbti_predict in result:
+    for _, mbti_real, mbti_predict in result:
         for i in range(4):
             if mbti_real[i] == mbti_predict[i]:
                 count[i] += 1
     count /= len(result)
-    return [f"{x*100:.2f}%" for x in count], stats.hmean(count)
+    return [f"{x*100:.4f}%" for x in count], stats.hmean(count), len(result)
