@@ -18,6 +18,6 @@ for i, chunk in enumerate(chunks):
     data_process = pd.concat([data_process, data_merge], axis=0)
 
 # %%
-data_process.to_csv('pand_clean_process1.csv')
+data_process.to_csv('/opt/project/KG_Assist_LLM/data/pand/datas/pand_clean_process1.csv')
 
 
