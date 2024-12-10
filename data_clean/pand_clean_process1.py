@@ -14,6 +14,7 @@ chunks = pd.read_csv('/opt/project/KG_Assist_LLM/data/pand/datas/all_comments_si
 for i, chunk in enumerate(chunks):
     chunk = chunk[['author', 'body']]
     data_merge = pd.merge(left=data, right=chunk, on='author', how='inner')
+    print(data_merge.author.value_counts().shape)
     data_process = pd.concat([data_process, data_merge], axis=0)
 
 # %%
