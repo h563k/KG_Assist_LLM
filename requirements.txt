@@ -5,4 +5,5 @@ openai
 pyautogen
 scipy
 backoff
-# pip install "flaml[automl]"   
+httpx[socks]
+# flaml[automl]

@@ -9,3 +9,5 @@ test
 learning/coding
 config
 __pycache__/
+LLaMA-Factory-0.9.1
+*.tar.gz
