@@ -22,7 +22,7 @@ print(data1.shape[0], data2.shape[0])
 data1.reset_index(drop=True, inplace=True)
 data2.reset_index(drop=True, inplace=True)
 
-# %%
+
 data1.to_csv('/opt/project/KG_Assist_LLM/data/pand/datas/pand_clean_process2-2-1.csv', index=False)
 
 # %%

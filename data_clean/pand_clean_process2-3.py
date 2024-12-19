@@ -1,5 +1,6 @@
 # %%
 import sys
+import time
 sys.path.append('/opt/project/KG_Assist_LLM')
 
 # %%
@@ -7,18 +8,19 @@ import pandas as pd
 from functionals.llm_api import openai_response
 
 # %%
-chunk_size = 100
-chunks = pd.read_csv('/opt/project/KG_Assist_LLM/data/pand/datas/pand_clean_process2-2-1.csv', chunksize=chunk_size)
+chunk_size = 10
+chunks = pd.read_csv('/opt/project/KG_Assist_LLM/data/pand/datas/pand_clean_process2-2-2.csv', chunksize=chunk_size)
 
 # %%
 system_prompt = "Determine if the following sentence involves character traits. If it does not, just respond with 'No'. If it does, just respond with 'Yes'"
 
 # %%
 data_process = pd.DataFrame()
-left, right = 0, 201
+left, right = 0, 2000
 for j, chunk in enumerate(chunks):
-    print(j)
+    time.sleep(0.1)
     if left <= j <= right:
+        print(j)
         temp = chunk.copy()
         temp.reset_index(inplace=True, drop=True)
         temp.loc[:, 'is_mbti'] = None
@@ -35,7 +37,7 @@ for j, chunk in enumerate(chunks):
         data_final = data_process.copy()
         data_final.reset_index(drop=True, inplace=True)
         data_final.to_csv(
-            '/opt/project/KG_Assist_LLM/data/pand/datas/pand_clean_process2-2-3.csv')
+            '/opt/project/KG_Assist_LLM/data/pand/datas/pand_clean_process2-3.csv')
     elif j <= left:
         continue
     else:
