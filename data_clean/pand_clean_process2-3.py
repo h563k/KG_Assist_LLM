@@ -16,7 +16,7 @@ system_prompt = "Determine if the following sentence involves character traits. 
 
 # %%
 data_process = pd.DataFrame()
-left, right = 0, 2000
+left, right = 21, 2000
 for j, chunk in enumerate(chunks):
     time.sleep(0.1)
     if left <= j <= right:
@@ -28,6 +28,10 @@ for j, chunk in enumerate(chunks):
             author = temp.iloc[i]['author']
             mbti = temp.iloc[i]['mbti']
             body = temp.iloc[i]['body']
+            if not body:
+                continue
+            if len(body.split(' ')) < 5:
+                continue
             response = openai_response(system_prompt=system_prompt,
                                        prompt=body,
                                        openai_type='openai_origin',
