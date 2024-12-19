@@ -18,13 +18,13 @@ system_prompt = "Determine if the following sentence involves character traits. 
 data_process = pd.DataFrame()
 left, right = 21, 2000
 for j, chunk in enumerate(chunks):
-    time.sleep(0.1)
+    chunk.dropna(inplace=True)
     if left <= j <= right:
         print(j)
         temp = chunk.copy()
         temp.reset_index(inplace=True, drop=True)
         temp.loc[:, 'is_mbti'] = None
-        for i in range(int(chunk_size)):
+        for i in range(int(chunk.shape[0])):
             author = temp.iloc[i]['author']
             mbti = temp.iloc[i]['mbti']
             body = temp.iloc[i]['body']
