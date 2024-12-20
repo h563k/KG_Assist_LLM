@@ -1,10 +1,15 @@
 import os
 import re
-import backoff
 import openai
 from autogen import initiate_chats, ConversableAgent
 from functionals.system_config import ModelConfig
 from functionals.standard_log import log_to_file
+from tenacity import (
+    retry,
+    stop_after_attempt,
+    wait_random_exponential,
+)  # for exponential backoff
+
 
 config = ModelConfig()
 mbti = config.mbti
@@ -99,8 +104,10 @@ class MbtiChats:
         agent = ConversableAgent(
             name=user_name,
             llm_config=self.llm_config,
-            system_message=f"""Please analyze and predict the users' MBTI personality types from a {user_name} perspective, with the number of predictions being no more than {self.nums}.""",
-            description=f"""{user_name} expert, skilled in analyzing user information from a {user_name} angle to predict their MBTI personality type.""",
+            system_message=f"""Please analyze and predict the users' MBTI personality types from a {
+                user_name} perspective, with the number of predictions being no more than {self.nums}.""",
+            description=f"""{user_name} expert, skilled in analyzing user information from a {
+                user_name} angle to predict their MBTI personality type.""",
             human_input_mode="NEVER",
         )
         return agent
@@ -172,7 +179,7 @@ class MbtiChats:
             mbti_type = mbti_type[0]
         self.chat_result['final_predict'] = mbti_type[0]
 
-    @backoff.on_exception(backoff.expo, openai.RateLimitError)
+    @retry(wait=wait_random_exponential(min=1, max=60), stop=stop_after_attempt(6))
     @log_to_file
     def run(self, task):
         task = self.data_process(task)

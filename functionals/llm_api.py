@@ -1,6 +1,4 @@
 import openai
-import random
-import time
 from functionals.system_config import ModelConfig
 from functionals.standard_log import log_to_file
 from tenacity import (
