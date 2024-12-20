@@ -16,7 +16,7 @@ system_prompt = "Determine if the following sentence involves character traits. 
 
 # %%
 data_process = pd.DataFrame()
-left, right = 21, 2000
+left, right = 185, 2000
 for j, chunk in enumerate(chunks):
     chunk.dropna(inplace=True)
     if left <= j <= right:
