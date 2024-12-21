@@ -1,22 +1,22 @@
 # %%
 import sys
-import time
 sys.path.append('/opt/project/KG_Assist_LLM')
+from functionals.llm_api import openai_response
+import pandas as pd
 
 # %%
-import pandas as pd
-from functionals.llm_api import openai_response
 
 # %%
 chunk_size = 10
-chunks = pd.read_csv('/opt/project/KG_Assist_LLM/data/pand/datas/pand_clean_process2-2-2.csv', chunksize=chunk_size)
+chunks = pd.read_csv(
+    '/opt/project/KG_Assist_LLM/data/pand/datas/pand_clean_process2-2-2.csv', chunksize=chunk_size)
 
 # %%
 system_prompt = "Determine if the following sentence involves character traits. If it does not, just respond with 'No'. If it does, just respond with 'Yes'"
 
 # %%
 data_process = pd.DataFrame()
-left, right = 185, 2000
+left, right = 1880, 2000
 for j, chunk in enumerate(chunks):
     chunk.dropna(inplace=True)
     if left <= j <= right:
@@ -36,6 +36,7 @@ for j, chunk in enumerate(chunks):
                                        prompt=body,
                                        openai_type='openai_origin',
                                        )
+            response = response.replace('None', '')
             temp.loc[i, 'is_mbti'] = response
         data_process = pd.concat([data_process, temp], axis=0)
         data_final = data_process.copy()
