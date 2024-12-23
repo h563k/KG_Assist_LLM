@@ -14,7 +14,7 @@ from tenacity import (
 config = ModelConfig()
 mbti = config.mbti
 
-
+# TODO 考虑增加对于大量文本输入先使用小模型进行过滤
 class MbtiChats:
     def __init__(self, max_round=mbti['max_round'], nums=mbti['nums'], openai_type=mbti['openai_type'], model=mbti['model']) -> None:
         """
@@ -63,7 +63,7 @@ class MbtiChats:
         ]
         llm_config = {"config_list": config_list, }
         return llm_config
-
+    # TODO 增加对大量文本的过滤处理。或者调用 bert 或者调用小模型，注意比较下效果 
     @staticmethod
     def data_process(txt: str):
         temp = []
