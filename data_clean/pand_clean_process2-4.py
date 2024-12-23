@@ -44,6 +44,8 @@ data.head()
 # %%
 from sklearn.model_selection import train_test_split
 data_train, data_eval = train_test_split(data, test_size=0.1, random_state=42)
+data_train.to_csv('/opt/project/KG_Assist_LLM/data/pand/bert_train/data_for_train/data_train.csv')
+data_eval.to_csv('/opt/project/KG_Assist_LLM/data/pand/bert_train/data_for_train/data_eval.csv')
 
 # %%
 data_train = Dataset.from_pandas(
@@ -75,11 +77,11 @@ data_eval = data_eval.cast_column("labels", ClassLabel(num_classes=2))
 training_args = TrainingArguments(
     output_dir="/opt/project/KG_Assist_LLM/data/pand/bert_train",
     logging_dir="/opt/project/KG_Assist_LLM/logs",
-    logging_steps=10,
+    logging_steps=100,
     evaluation_strategy="epoch",
     report_to="tensorboard",
     per_device_train_batch_size=16,
-    num_train_epochs=5,
+    num_train_epochs=15,
     learning_rate=2e-6,
     weight_decay=0.01
 )
