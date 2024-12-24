@@ -8,6 +8,6 @@ ENV_NAME=llama
 . "${CONDA_PATH}/etc/profile.d/conda.sh"
 conda activate $ENV_NAME
 
-cd /opt/project/llama-factory/LLaMA-Factory
+cd /opt/project/KG_Assist_LLM/data/LLaMA-Factory-0.9.1
 git pull
 pip install -e ".[torch,metrics]"
