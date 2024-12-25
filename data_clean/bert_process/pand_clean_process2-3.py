@@ -1,8 +1,8 @@
 # %%
-import pandas as pd
-from functionals.llm_api import openai_response
 import sys
 sys.path.append('/opt/project/KG_Assist_LLM')
+import pandas as pd
+from functionals.llm_api import openai_response
 
 # %%
 
