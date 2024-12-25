@@ -1,4 +1,4 @@
-# 数据
+# 潘多拉数据清洗
 import pandas as pd
 import sys
 sys.path.append('/opt/project/KG_Assist_LLM')
