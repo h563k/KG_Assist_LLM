@@ -12,11 +12,11 @@ chunks = pd.read_csv(
     '/opt/project/KG_Assist_LLM/data/pand/datas/pand_clean_process2-2-2.csv', chunksize=chunk_size)
 
 # %%
-system_prompt = "Determine if the following sentence involves character traits. If it does not, just respond with 'No'. If it does, just respond with 'Yes'"
+system_prompt = "Does the following user post reflect any MBTI personality traits, just respond with: Yes, No, or Not Sure"
 
 # %%
 data_process = pd.DataFrame()
-left, right = 0, 2000
+left, right = 0, 2
 for j, chunk in enumerate(chunks):
     chunk.dropna(inplace=True)
     if left <= j <= right:

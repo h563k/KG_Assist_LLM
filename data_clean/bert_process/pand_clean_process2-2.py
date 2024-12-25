@@ -3,7 +3,7 @@ import pandas as pd
 import sys
 sys.path.append('/opt/project/KG_Assist_LLM')
 
-# %%
+# 潘多拉数据清洗+kaggle 数据合并
 data = pd.read_csv(
     '/opt/project/KG_Assist_LLM/data/pand/datas/pand_clean_process2-1.csv')
 
