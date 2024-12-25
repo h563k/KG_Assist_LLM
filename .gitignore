@@ -3,8 +3,6 @@ logs
 data
 test
 learning/coding
-data/pand
-LLaMA-Factory*
 
 ### 不希望写入的文件
 config/setting.yaml
