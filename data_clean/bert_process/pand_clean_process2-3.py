@@ -1,11 +1,13 @@
 # %%
 import os
-from functionals.llm_api import openai_response
 import pandas as pd
 import sys
-sys.path.append('/opt/project/KG_Assist_LLM')
 
-# %%
+
+if __name__ == '__main__':
+    sys.path.append('/opt/project/KG_Assist_LLM')
+    from functionals.llm_api import openai_response
+
 
 # %%
 chunk_size = 10
@@ -22,6 +24,7 @@ if os.path.exists('/opt/project/KG_Assist_LLM/data/pand/datas/pand_clean_process
     data_process = pd.read_csv(
         '/opt/project/KG_Assist_LLM/data/pand/datas/pand_clean_process2-3.csv')
     left = data_process.shape[0]//chunk_size
+print(left, right)
 for j, chunk in enumerate(chunks):
     chunk.dropna(inplace=True)
     if left <= j <= right:
