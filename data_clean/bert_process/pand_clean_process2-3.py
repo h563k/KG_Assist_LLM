@@ -19,7 +19,7 @@ system_prompt = "Please read the following content and determine if it involves 
 
 # %%
 data_process = pd.DataFrame()
-left, right = 0, chunks.shape[0]//chunk_size
+left, right = 0, 5870
 if os.path.exists('/opt/project/KG_Assist_LLM/data/pand/datas/pand_clean_process2-3.csv'):
     data_process = pd.read_csv(
         '/opt/project/KG_Assist_LLM/data/pand/datas/pand_clean_process2-3.csv')
@@ -50,7 +50,7 @@ for j, chunk in enumerate(chunks):
         data_final = data_process.copy()
         data_final.reset_index(drop=True, inplace=True)
         data_final.to_csv(
-            '/opt/project/KG_Assist_LLM/data/pand/datas/pand_clean_process2-3.csv')
+            '/opt/project/KG_Assist_LLM/data/pand/datas/pand_clean_process2-3.csv',index=False)
     elif j <= left:
         continue
     else:
