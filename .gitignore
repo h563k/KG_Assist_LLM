@@ -1,12 +1,17 @@
+### 不希望写入的文件夹
+logs
+data
+test
+learning/coding
+data/pand
+LLaMA-Factory*
+
+### 不希望写入的文件
+config/setting.yaml
+
 ### Python template
 .idea
 .vscode
-*.log
 *.zip
-data/pand
-test
 .cache
-learning/coding
-config
 __pycache__/
-LLaMA-Factory*
