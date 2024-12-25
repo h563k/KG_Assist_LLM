@@ -1,4 +1,4 @@
-# %%
+### 潘多拉数据清洗
 import re
 import pandas as pd
 
@@ -41,11 +41,3 @@ data_process.drop_duplicates(inplace=True)
 # %%
 data_process.to_csv(
     '/opt/project/KG_Assist_LLM/data/pand/datas/pand_clean_process2.csv', index=False)
-
-# %%
-# chunk_test = chunk.groupby(by=['author','mbti']).agg(lambda x: list(x))
-# chunk_test=chunk_test['body'].map(lambda x: '\n '.join(x))
-# chunk_test
-
-# %%
-# chunk_test.to_csv('/opt/project/KG_Assist_LLM/data/pand/datas/pand_clean_process2.csv')
