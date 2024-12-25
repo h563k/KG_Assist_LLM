@@ -1,13 +1,9 @@
-# %%
+# 数据
 import pandas as pd
 import sys
 sys.path.append('/opt/project/KG_Assist_LLM')
 from functionals.llm_api import openai_response
 
-# %%
-
-# %%
-system_prompt = "Determine if the following sentence involves character traits. If it does not, just respond with 'No'. If it does, just respond with 'Yes'"
 
 # %%
 chunk_size = 100
