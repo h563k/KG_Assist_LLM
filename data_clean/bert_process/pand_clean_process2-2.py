@@ -80,6 +80,8 @@ data_pand = pd.concat([data_pand, data_temp])
 
 data_pand['mbti'] = data_pand['mbti'].map(lambda x: str(x).upper())
 data_pand.reset_index(drop=True, inplace=True)
-
+data_pand.drop_duplicates(inplace=True)
+data_pand.dropna(inplace=True)
+data_pand.reset_index(drop=True, inplace=True)
 data_pand.to_csv(
     '/opt/project/KG_Assist_LLM/data/pand/datas/pand_clean_process2-2.csv', index=False)
