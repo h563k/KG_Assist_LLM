@@ -23,6 +23,7 @@ left, right = 0, 5870
 if os.path.exists('/opt/project/KG_Assist_LLM/data/pand/datas/pand_clean_process2-3.csv'):
     data_process = pd.read_csv(
         '/opt/project/KG_Assist_LLM/data/pand/datas/pand_clean_process2-3.csv')
+    data_process.dropna(inplace=True)
     left = data_process.shape[0]//chunk_size
 print(left, right)
 for j, chunk in enumerate(chunks):
