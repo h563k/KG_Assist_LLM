@@ -1,8 +1,8 @@
 # %%
+import pandas as pd
+from functionals.llm_api import openai_response
 import sys
 sys.path.append('/opt/project/KG_Assist_LLM')
-from functionals.llm_api import openai_response
-import pandas as pd
 
 # %%
 
@@ -16,7 +16,7 @@ system_prompt = "Determine if the following sentence involves character traits. 
 
 # %%
 data_process = pd.DataFrame()
-left, right = 1880, 2000
+left, right = 0, 2000
 for j, chunk in enumerate(chunks):
     chunk.dropna(inplace=True)
     if left <= j <= right:

@@ -1,19 +1,24 @@
 # %%
+from datasets import Dataset, ClassLabel
+from transformers import Trainer
+from sklearn.model_selection import train_test_split
+from transformers import AutoModelForSequenceClassification
+from transformers import TrainingArguments
+from transformers import AutoTokenizer, DataCollatorWithPadding
+import pandas as pd
 import sys
 sys.path.append('/opt/project/KG_Assist_LLM')
 
 # %%
-import pandas as pd
-from datasets import Dataset,ClassLabel
-from transformers import AutoTokenizer, DataCollatorWithPadding
-from transformers import TrainingArguments
-from transformers import AutoModelForSequenceClassification
 
 
 # %%
-data = pd.read_csv('/opt/project/KG_Assist_LLM/data/pand/datas/pand_clean_process2-3.csv',index_col=0)
+data = pd.read_csv(
+    '/opt/project/KG_Assist_LLM/data/pand/datas/pand_clean_process2-3.csv', index_col=0)
 
 # %%
+
+
 def replace(x):
     x = x.upper()
     if 'YES' in x:
@@ -21,7 +26,8 @@ def replace(x):
     elif 'NO' in x:
         return int(0)
     else:
-        return 
+        return
+
 
 # %%
 data = data[['body', 'is_mbti']]
@@ -42,22 +48,25 @@ data.head()
 """
 
 # %%
-from sklearn.model_selection import train_test_split
 data_train, data_eval = train_test_split(data, test_size=0.1, random_state=42)
-data_train.to_csv('/opt/project/KG_Assist_LLM/data/pand/bert_train/data_for_train/data_train.csv')
-data_eval.to_csv('/opt/project/KG_Assist_LLM/data/pand/bert_train/data_for_train/data_eval.csv')
+data_train.to_csv(
+    '/opt/project/KG_Assist_LLM/data/pand/bert_train/data_for_train/data_train.csv')
+data_eval.to_csv(
+    '/opt/project/KG_Assist_LLM/data/pand/bert_train/data_for_train/data_eval.csv')
 
 # %%
 data_train = Dataset.from_pandas(
     df=data_train
-    )
+)
 data_eval = Dataset.from_pandas(
     df=data_eval
-    )
+)
 
 # %%
 checkpoint = "bert-base-uncased"
 tokenizer = AutoTokenizer.from_pretrained(checkpoint)
+
+
 def tokenize_function(example):
     return tokenizer(example["body"], truncation=True, padding="max_length", max_length=512)
 
@@ -67,7 +76,8 @@ tokenized_eval = data_eval.map(tokenize_function, batched=True)
 data_collator = DataCollatorWithPadding(tokenizer=tokenizer)
 
 # %%
-model = AutoModelForSequenceClassification.from_pretrained(checkpoint, num_labels=2, trust_remote_code=True)
+model = AutoModelForSequenceClassification.from_pretrained(
+    checkpoint, num_labels=2, trust_remote_code=True)
 
 # %%
 data_train = data_train.cast_column("labels", ClassLabel(num_classes=2))
@@ -87,7 +97,6 @@ training_args = TrainingArguments(
 )
 
 # %%
-from transformers import Trainer
 
 trainer = Trainer(
     model=model,
@@ -103,10 +112,9 @@ trainer.train()
 
 # %%
 # Step 8: 保存模型
-trainer.save_model("/opt/project/KG_Assist_LLM/data/pand/bert_train/model_save")
+trainer.save_model(
+    "/opt/project/KG_Assist_LLM/data/pand/bert_train/model_save")
 metrics = trainer.evaluate()
 
 trainer.log_metrics("eval", metrics)
 print(metrics)
-
-
