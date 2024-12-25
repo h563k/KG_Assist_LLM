@@ -1,22 +1,27 @@
 # %%
+import os
+from functionals.llm_api import openai_response
+import pandas as pd
 import sys
 sys.path.append('/opt/project/KG_Assist_LLM')
-import pandas as pd
-from functionals.llm_api import openai_response
 
 # %%
 
 # %%
 chunk_size = 10
 chunks = pd.read_csv(
-    '/opt/project/KG_Assist_LLM/data/pand/datas/pand_clean_process2-2-2.csv', chunksize=chunk_size)
+    '/opt/project/KG_Assist_LLM/data/pand/datas/pand_clean_process2-2.csv', chunksize=chunk_size)
 
 # %%
-system_prompt = "Does the following user post reflect any MBTI personality traits, just respond with: Yes, No, or Not Sure"
+system_prompt = "Please read the following content and determine if it involves any MBTI personality traits and any character characteristics,just respond with a simple 'Yes' or 'No'"
 
 # %%
 data_process = pd.DataFrame()
-left, right = 0, 2
+left, right = 0, chunks.shape[0]//chunk_size
+if os.path.exists('/opt/project/KG_Assist_LLM/data/pand/datas/pand_clean_process2-3.csv'):
+    data_process = pd.read_csv(
+        '/opt/project/KG_Assist_LLM/data/pand/datas/pand_clean_process2-3.csv')
+    left = data_process.shape[0]//chunk_size
 for j, chunk in enumerate(chunks):
     chunk.dropna(inplace=True)
     if left <= j <= right:
@@ -30,13 +35,13 @@ for j, chunk in enumerate(chunks):
             body = temp.iloc[i]['body']
             if not body:
                 continue
-            if len(body.split(' ')) < 5:
-                continue
             response = openai_response(system_prompt=system_prompt,
                                        prompt=body,
                                        openai_type='openai_origin',
                                        )
-            response = response.replace('None', '')
+            response = response.split('None')[0]
+            if "YES" in response.upper():
+                print(body)
             temp.loc[i, 'is_mbti'] = response
         data_process = pd.concat([data_process, temp], axis=0)
         data_final = data_process.copy()

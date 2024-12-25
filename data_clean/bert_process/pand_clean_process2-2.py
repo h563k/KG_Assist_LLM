@@ -5,7 +5,7 @@ sys.path.append('/opt/project/KG_Assist_LLM')
 
 # 潘多拉数据清洗+kaggle 数据合并
 data = pd.read_csv(
-    '/opt/project/KG_Assist_LLM/data/pand/datas/pand_clean_process2-1.csv')
+    '/opt/project/KG_Assist_LLM/data/pand/datas/pand_clean_process2-1.csv',index_col=0)
 
 # %%
 print(data.columns)
@@ -79,9 +79,9 @@ for i in range(data.shape[0]):
 data_pand = pd.concat([data_pand, data_temp])
 
 data_pand['mbti'] = data_pand['mbti'].map(lambda x: str(x).upper())
-data_pand.reset_index(drop=True, inplace=True)
 data_pand.drop_duplicates(inplace=True)
-data_pand.dropna(inplace=True)
 data_pand.reset_index(drop=True, inplace=True)
+print(data_pand.shape)
+print(data_pand.head())
 data_pand.to_csv(
     '/opt/project/KG_Assist_LLM/data/pand/datas/pand_clean_process2-2.csv', index=False)
