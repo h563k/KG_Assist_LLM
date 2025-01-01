@@ -83,10 +83,12 @@ model = AutoModelForSequenceClassification.from_pretrained(
 data_train = data_train.cast_column("labels", ClassLabel(num_classes=2))
 data_eval = data_eval.cast_column("labels", ClassLabel(num_classes=2))
 
+home = '/opt/project/KG_Assist_LLM/'
+
 # tensorboard --logdir=/opt/project/KG_Assist_LLM/logs
 training_args = TrainingArguments(
-    output_dir="/opt/project/KG_Assist_LLM/data/pand/bert_train",
-    logging_dir="/opt/project/KG_Assist_LLM/logs",
+    output_dir=f"{home}data/model_train/bert_train",
+    logging_dir=f"{home}logs",
     logging_steps=100,
     evaluation_strategy="epoch",
     report_to="tensorboard",
