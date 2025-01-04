@@ -14,8 +14,6 @@ from tenacity import (
 config = ModelConfig()
 mbti = config.mbti
 
-# TODO 考虑增加对于大量文本输入先使用小模型进行过滤
-
 
 class MbtiChats:
     def __init__(self, max_round=mbti['max_round'], nums=mbti['nums'], openai_type=mbti['openai_type'], model=mbti['model'], deepclean=mbti['deepclean'], cutoff=mbti['cutoff']) -> None:
@@ -67,7 +65,6 @@ class MbtiChats:
         ]
         llm_config = {"config_list": config_list, }
         return llm_config
-    # TODO 增加对大量文本的过滤处理。或者调用 bert 或者调用小模型，注意比较下效果
 
     @staticmethod
     def chat_unit(sender, recipient, message):
@@ -237,6 +234,7 @@ Analyze the AUTHOR'S TEXT carefully, and provide a detailed and thoughtful respo
         self.chat_result['mbti_vote_final'] = mbti_vote_final
         self.chat_result['vote_predict'] = "".join(mbti_vote_final.keys())
 
+    # TODO 下一步补充辩论环节，目前来看总结者可能不需要？得重写此函数
     def final_predict(self, nums, task):
         final_predict = f"""### Original text of the user's statement.
 {task}\n\n
