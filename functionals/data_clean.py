@@ -21,9 +21,11 @@ def data_process(task: str, deepclean=True, cutoff=3500):
     for contents in txt.split('\n'):
         bodys = contents.split('. ')
         for body in bodys:
-            if len(body.split(' ')) <= 5:
+            test = [x for x in body.split(' ') if x]
+            if len(test) <= 5:
                 continue
-            sentences.extend(bodys)
+            body = ' '.join(test)
+            sentences.append(body)
     # 按长度截断
     count = 0
     bert_process = []

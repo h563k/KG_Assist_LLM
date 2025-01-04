@@ -198,6 +198,42 @@ Analyze the AUTHOR'S TEXT carefully, and provide a detailed and thoughtful respo
             vote_dict[voter] = circle_chat
         # 记录提取结果
         self.chat_result['vote_dict'] = vote_dict
+        # 数据结构 ‘E’: [‘投票数量’， '平均分'， {'投票人':Reason}]
+        mbti_vote = {
+            'E': [0, 0, {}],
+            'I': [0, 0, {}],
+            'N': [0, 0, {}],
+            'S': [0, 0, {}],
+            'T': [0, 0, {}],
+            'F': [0, 0, {}],
+            'J': [0, 0, {}],
+            'P': [0, 0, {}]
+        }
+
+        for expert, datas in vote_dict.items():
+
+            for data in datas:
+                vote_aim = mbti_vote[data[0]]
+                sum_pre = vote_aim[0]*vote_aim[1]
+                vote_aim[0] += 1
+                sum_pre += data[1]
+                vote_aim[1] = sum_pre/vote_aim[0]
+                vote_aim[2][expert] = data[2]
+        # 记录计算结果
+        self.chat_result['mbti_vote'] = mbti_vote
+
+        def vote_result(mbti_vote_final, vote1, vote2):
+            if mbti_vote_final[vote1][0] > mbti_vote_final[vote2][0]:
+                mbti_vote_final.pop(vote2)
+            else:
+                mbti_vote_final.pop(vote1)
+        mbti_vote_final = mbti_vote.copy()
+        vote_result(mbti_vote_final, "E", "I")
+        vote_result(mbti_vote_final, "N", "S")
+        vote_result(mbti_vote_final, "T", "F")
+        vote_result(mbti_vote_final, "J", "P")
+        self.chat_result['mbti_vote_final'] = mbti_vote_final
+        self.chat_result['vote_predict'] = "".join(mbti_vote_final.keys())
 
     def final_predict(self, nums, task):
         final_predict = f"""### Original text of the user's statement.
