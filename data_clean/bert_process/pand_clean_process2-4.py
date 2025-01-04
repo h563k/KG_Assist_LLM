@@ -7,17 +7,13 @@ from transformers import TrainingArguments
 from transformers import AutoTokenizer, DataCollatorWithPadding
 import pandas as pd
 import sys
-sys.path.append('/opt/project/KG_Assist_LLM')
-
-# %%
-
-
-# %%
+home_path = '/opt/project/KG_Assist_LLM'
+sys.path.append(home_path)
 
 
-if not os.path.exists('/opt/project/KG_Assist_LLM/data/bert_train/data_for_train/data_train.csv'):
+if not os.path.exists(f'{home_path}/data/bert_train/data_for_train/data_train.csv'):
     data = pd.read_csv(
-        '/opt/project/KG_Assist_LLM/data/pand/datas/pand_clean_process2-3.csv', index_col=0)
+        f'{home_path}/data/pand/datas/pand_clean_process2-3.csv', index_col=0)
 
     def replace(x):
         x = x.upper()
@@ -46,14 +42,14 @@ if not os.path.exists('/opt/project/KG_Assist_LLM/data/bert_train/data_for_train
     data_train, data_eval = train_test_split(
         data, test_size=0.1, random_state=42)
     data_train.to_csv(
-        '/opt/project/KG_Assist_LLM/data/bert_train/data_for_train/data_train.csv')
+        f'{home_path}/data/bert_train/data_for_train/data_train.csv')
     data_eval.to_csv(
-        '/opt/project/KG_Assist_LLM/data/bert_train/data_for_train/data_eval.csv')
+        f'{home_path}/data/bert_train/data_for_train/data_eval.csv')
 else:
     data_train = pd.read_csv(
-        '/opt/project/KG_Assist_LLM/data/bert_train/data_for_train/data_train.csv', index_col=0)
+        f'{home_path}/data/bert_train/data_for_train/data_train.csv', index_col=0)
     data_eval = pd.read_csv(
-        '/opt/project/KG_Assist_LLM/data/bert_train/data_for_train/data_eval.csv', index_col=0)
+        f'{home_path}/data/bert_train/data_for_train/data_eval.csv', index_col=0)
 
 
 data_train = Dataset.from_pandas(
@@ -111,7 +107,7 @@ trainer.train()
 
 # Step 8: 保存模型
 trainer.save_model(
-    "/opt/project/KG_Assist_LLM/data/pand/bert_train/model_save")
+    f"{home_path}/data/pand/bert_train/model_save")
 metrics = trainer.evaluate()
 
 trainer.log_metrics("eval", metrics)
