@@ -1,5 +1,5 @@
 import re
-from functionals.llm_api import llama_factory_api
+from functionals.llm_api import bert_api
 
 
 def data_process(txt: str):
