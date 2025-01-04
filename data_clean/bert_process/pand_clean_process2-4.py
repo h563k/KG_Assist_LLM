@@ -1,4 +1,4 @@
-# %%
+import os
 from datasets import Dataset, ClassLabel
 from transformers import Trainer
 from sklearn.model_selection import train_test_split
@@ -13,46 +13,47 @@ sys.path.append('/opt/project/KG_Assist_LLM')
 
 
 # %%
-data = pd.read_csv(
-    '/opt/project/KG_Assist_LLM/data/pand/datas/pand_clean_process2-3.csv', index_col=0)
-
-# %%
 
 
-def replace(x):
-    x = x.upper()
-    if 'YES' in x:
-        return int(1)
-    elif 'NO' in x:
-        return int(0)
-    else:
-        return
+if not os.path.exists('/opt/project/KG_Assist_LLM/data/bert_train/data_for_train/data_train.csv'):
+    data = pd.read_csv(
+        '/opt/project/KG_Assist_LLM/data/pand/datas/pand_clean_process2-3.csv', index_col=0)
 
+    def replace(x):
+        x = x.upper()
+        if 'YES' in x:
+            return int(1)
+        elif 'NO' in x:
+            return int(0)
+        else:
+            return
 
-# %%
-data = data[['body', 'is_mbti']]
-data.columns = ['body', 'labels']
-data.labels = data.labels.map(replace)
-data.dropna(inplace=True)
-data.labels = data.labels.astype(int)
+    data = data[['body', 'is_mbti']]
+    data.columns = ['body', 'labels']
+    data.labels = data.labels.map(replace)
+    data.dropna(inplace=True)
+    data.labels = data.labels.astype(int)
 
-# %%
-data.head()
-"""
-	body	labels
-0	i'm honestly surprised Alexandria isn't on thi...	1.0
-1	You really need to quit going to her	0.0
-2	Mother, look! He thinks he's people!!	1.0
-3	i love how the first one you linked is newer t...	0.0
-4	in July 2003 on my dad's (and grandpa's) farm,...	0.0
-"""
-
-# %%
-data_train, data_eval = train_test_split(data, test_size=0.1, random_state=42)
-data_train.to_csv(
-    '/opt/project/KG_Assist_LLM/data/pand/bert_train/data_for_train/data_train.csv')
-data_eval.to_csv(
-    '/opt/project/KG_Assist_LLM/data/pand/bert_train/data_for_train/data_eval.csv')
+    data.head()
+    """
+        body	labels
+    0	i'm honestly surprised Alexandria isn't on thi...	1.0
+    1	You really need to quit going to her	0.0
+    2	Mother, look! He thinks he's people!!	1.0
+    3	i love how the first one you linked is newer t...	0.0
+    4	in July 2003 on my dad's (and grandpa's) farm,...	0.0
+    """
+    data_train, data_eval = train_test_split(
+        data, test_size=0.1, random_state=42)
+    data_train.to_csv(
+        '/opt/project/KG_Assist_LLM/data/bert_train/data_for_train/data_train.csv')
+    data_eval.to_csv(
+        '/opt/project/KG_Assist_LLM/data/bert_train/data_for_train/data_eval.csv')
+else:
+    data_train = pd.read_csv(
+        '/opt/project/KG_Assist_LLM/data/bert_train/data_for_train/data_train.csv', index_col=0)
+    data_eval = pd.read_csv(
+        '/opt/project/KG_Assist_LLM/data/bert_train/data_for_train/data_eval.csv', index_col=0)
 
 # %%
 data_train = Dataset.from_pandas(

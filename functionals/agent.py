@@ -4,6 +4,7 @@ import openai
 from autogen import initiate_chats, ConversableAgent
 from functionals.system_config import ModelConfig
 from functionals.standard_log import log_to_file
+from functionals.data_clean import data_process
 from tenacity import (
     retry,
     stop_after_attempt,
@@ -66,21 +67,6 @@ class MbtiChats:
         llm_config = {"config_list": config_list, }
         return llm_config
     # TODO 增加对大量文本的过滤处理。或者调用 bert 或者调用小模型，注意比较下效果
-
-    @staticmethod
-    def data_process(txt: str):
-        temp = []
-        txt = txt.split('|||')
-        for message in txt:
-            website = re.findall('(https://\S+|http://\S+)', message)
-            if not website:
-                temp.append(message)
-                continue
-            for web in website:
-                message = message.replace(web, '')
-            temp.append(message) if message else None
-        txt = "\n".join(temp)
-        return txt
 
     @staticmethod
     def chat_unit(sender, recipient, message):
@@ -185,10 +171,10 @@ class MbtiChats:
     @retry(wait=wait_random_exponential(min=1, max=60), stop=stop_after_attempt(6))
     @log_to_file
     def run(self, task):
-        task = self.data_process(task)
+        task = data_process(task)
         self.chat_result['origin_task'] = task
         first_chats = self.first_chats(task)
-        self.circle_chat(task, first_chats, 1, self.max_round)
+        self.circle_chat(task, first_chats, 1, self.max_rou nd)
         self.final_predict(self.max_round, task)
         self.result_clean()
         return self.chat_result
