@@ -174,7 +174,7 @@ class MbtiChats:
         task = data_process(task)
         self.chat_result['origin_task'] = task
         first_chats = self.first_chats(task)
-        self.circle_chat(task, first_chats, 1, self.max_rou nd)
+        self.circle_chat(task, first_chats, 1, self.max_round)
         self.final_predict(self.max_round, task)
         self.result_clean()
         return self.chat_result
