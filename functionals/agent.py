@@ -18,7 +18,7 @@ mbti = config.mbti
 
 
 class MbtiChats:
-    def __init__(self, max_round=mbti['max_round'], nums=mbti['nums'], openai_type=mbti['openai_type'], model=mbti['model']) -> None:
+    def __init__(self, max_round=mbti['max_round'], nums=mbti['nums'], openai_type=mbti['openai_type'], model=mbti['model'], deepclean=mbti['deepclean'], cutoff=mbti['cutoff']) -> None:
         """
         :param max_round: Number of rounds for free discussion among three agents. 
         专家讨论的轮数
@@ -43,6 +43,8 @@ class MbtiChats:
             "Linguistic": self.create_agent("Linguistic"),
             "Commentator": self.commentator()
         }
+        self.deepclean = deepclean
+        self.cutoff = cutoff
 
     def env_init(self, openai_type) -> None:
         os.environ['http_proxy'] = config.OpenAI['proxy']
@@ -258,7 +260,7 @@ Analyze the AUTHOR'S TEXT carefully, and provide a detailed and thoughtful respo
     @retry(wait=wait_random_exponential(min=1, max=60), stop=stop_after_attempt(6))
     @log_to_file
     def run(self, task):
-        task = data_process(task)
+        task = data_process(task, deepclean=self.deepclean, cutoff=self.cutoff)
         self.chat_result['origin_task'] = task
         first_chats = self.first_chats(task)
         self.circle_chat(task, first_chats, 1, self.max_round)
