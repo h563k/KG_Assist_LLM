@@ -83,13 +83,13 @@ data_eval = data_eval.cast_column("labels", ClassLabel(num_classes=2))
 
 # tensorboard --logdir=/opt/project/KG_Assist_LLM/logs
 training_args = TrainingArguments(
-    output_dir=f"{home_path}/data/model_train/bert_train",
+    output_dir=f"{home_path}/data/bert_train/model_train",
     logging_dir=f"{home_path}/logs",
     logging_steps=100,
     evaluation_strategy="epoch",
     report_to="tensorboard",
     per_device_train_batch_size=16,
-    num_train_epochs=15,
+    num_train_epochs=5,
     learning_rate=2e-6,
     weight_decay=0.01
 )

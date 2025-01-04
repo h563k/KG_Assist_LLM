@@ -60,14 +60,16 @@ def llama_factory_api(prompt):
 
 def bert_api(input_text: str):
     # 加载模型和分词器
-    model_path = "/opt/project/KG_Assist_LLM/data/bert_train/model_save"
+    model_path = "/opt/project/KG_Assist_LLM/data/bert_train/model"
     model = AutoModelForSequenceClassification.from_pretrained(model_path)
     tokenizer = AutoTokenizer.from_pretrained(model_path)
 
     # 对输入文本进行分词
     inputs = tokenizer(input_text, return_tensors="pt",
                        truncation=True, padding=True, max_length=512)
-
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    model.to(device)
+    inputs.to(device)
     # 进行预测
     with torch.no_grad():
         outputs = model(**inputs)

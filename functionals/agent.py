@@ -1,6 +1,5 @@
 import os
 import re
-import openai
 from autogen import initiate_chats, ConversableAgent
 from functionals.system_config import ModelConfig
 from functionals.standard_log import log_to_file
@@ -93,8 +92,31 @@ class MbtiChats:
         agent = ConversableAgent(
             name=user_name,
             llm_config=self.llm_config,
-            system_message=f"""Please analyze and predict the users' MBTI personality types from a {
-                user_name} perspective, with the number of predictions being no more than {self.nums}.""",
+            system_message=f"""You are an {user_name} expert. Your task is to analyze the given AUTHOR'S TEXT and determine the MBTI personality type of the user based on four binary dimensions: 
+1. **Extraversion (E) vs. Introversion (I)** 
+2. **Sensing (S) vs. Intuition (N)** 
+3. **Thinking (T) vs. Feeling (F)** 
+4. **Judging (J) vs. Perceiving (P)** 
+For each dimension, provide: 
+- **Classification**: Your decision (e.g., "E" or "I"). 
+- **Reason**: A brief explanation of why you made this classification. 
+- **Confidence level**: A value between 0.0 and 1.0 that reflects how certain you are about the classification. 
+Use the following format for your response: 
+```
+1. Extraversion (E) vs. Introversion (I): [Your decision, e.g., "E"] 
+Reason: [Explain the reasoning behind your choice, e.g., "The user frequently discusses external social activities and expresses energy from interactions with others."] 
+Confidence level: [Your confidence score, e.g., "0.8"] 
+2. Sensing (S) vs. Intuition (N): [Your decision, e.g., "N"] 
+Reason: [Explain the reasoning behind your choice, e.g., "The user focuses on abstract ideas and future possibilities rather than concrete details."] 
+Confidence level: [Your confidence score, e.g., "0.7"] 
+3. Thinking (T) vs. Feeling (F): [Your decision, e.g., "T"] 
+Reason: [Explain the reasoning behind your choice, e.g., "The user emphasizes logical analysis and objectivity in decision-making."] 
+Confidence level: [Your confidence score, e.g., "0.9"] 
+4. Judging (J) vs. Perceiving (P): [Your decision, e.g., "P"] 
+Reason: [Explain the reasoning behind your choice, e.g., "The user prefers flexible approaches and is open to last-minute changes."] 
+Confidence level: [Your confidence score, e.g., "0.5"] 
+``` 
+Analyze the AUTHOR'S TEXT carefully, and provide a detailed and thoughtful response for each dimension.""",
             description=f"""{user_name} expert, skilled in analyzing user information from a {
                 user_name} angle to predict their MBTI personality type.""",
             human_input_mode="NEVER",
@@ -112,6 +134,7 @@ class MbtiChats:
         return Commentator
 
     def first_chats(self, task):
+        task = f"""AUTHOR'S TEXT: {task}"""
         first_chats_list = [
             initiate_chats([
                 self.chat_unit(
@@ -134,9 +157,8 @@ class MbtiChats:
             message = f"""The following are speculations from {chat_content['name']} experts, just for reference, you can stick to your own opinion:
         {chat_content['content']}"""
             chat_prompts.append(message)
-
+        self.chat_result[f'round_{nums}'] = chat_prompts
         combined_prompt = "\n".join(chat_prompts)
-        self.chat_result[f'round_{nums}'] = combined_prompt
 
         # 初始化下一轮的聊天
         next_chats = [
@@ -147,6 +169,35 @@ class MbtiChats:
         ]
 
         return self.circle_chat(task, next_chats, nums + 1, max_depth)
+
+    # 按照新的框架，在结束讨论后，我们应当进入一个投票环节， 这个环节主要在于讨论
+    @staticmethod
+    def check_vote(circle_chats: str):
+        expert_votes = ['Semantic', 'Sentiment', 'Linguistic']
+        for expert in expert_votes:
+            txt = f"The following are speculations from {expert} experts, just for reference, you can stick to your own opinion:"
+            if expert not in circle_chats:
+                continue
+            voter = expert
+        circle_chats = circle_chats.replace(txt, '')
+        mbti_predict = re.findall(r'\d\..*?\[(\S+)\]', circle_chats, re.I)
+        Confidence = re.findall(
+            r'Confidence level: (\d+\.\d+)', circle_chats, re.I)
+        Confidence = [float(i) for i in Confidence]
+        Reason = re.findall(r"(Reason\:.*)\n", circle_chats, re.I)
+        temp = []
+        for i in range(4):
+            temp.append([mbti_predict[i], Confidence[i], Reason[i]])
+        return voter, temp
+
+    def vote(self):
+        circle_chat_final = self.chat_result[f'round_{self.max_round}']
+        vote_dict = {}
+        for circle_chats in circle_chat_final:
+            voter, circle_chat = self.check_vote(circle_chats)
+            vote_dict[voter] = circle_chat
+        # 记录提取结果
+        self.chat_result['vote_dict'] = vote_dict
 
     def final_predict(self, nums, task):
         final_predict = f"""### Original text of the user's statement.
@@ -175,6 +226,7 @@ class MbtiChats:
         self.chat_result['origin_task'] = task
         first_chats = self.first_chats(task)
         self.circle_chat(task, first_chats, 1, self.max_round)
-        self.final_predict(self.max_round, task)
-        self.result_clean()
+        self.vote()
+        # self.final_predict(self.max_round, task)
+        # self.result_clean()
         return self.chat_result
