@@ -55,7 +55,7 @@ else:
     data_eval = pd.read_csv(
         '/opt/project/KG_Assist_LLM/data/bert_train/data_for_train/data_eval.csv', index_col=0)
 
-# %%
+
 data_train = Dataset.from_pandas(
     df=data_train
 )
@@ -63,7 +63,7 @@ data_eval = Dataset.from_pandas(
     df=data_eval
 )
 
-# %%
+
 checkpoint = "bert-base-uncased"
 tokenizer = AutoTokenizer.from_pretrained(checkpoint)
 
@@ -76,11 +76,11 @@ tokenized_train = data_train.map(tokenize_function, batched=True)
 tokenized_eval = data_eval.map(tokenize_function, batched=True)
 data_collator = DataCollatorWithPadding(tokenizer=tokenizer)
 
-# %%
+
 model = AutoModelForSequenceClassification.from_pretrained(
     checkpoint, num_labels=2, trust_remote_code=True)
 
-# %%
+
 data_train = data_train.cast_column("labels", ClassLabel(num_classes=2))
 data_eval = data_eval.cast_column("labels", ClassLabel(num_classes=2))
 
@@ -99,8 +99,6 @@ training_args = TrainingArguments(
     weight_decay=0.01
 )
 
-# %%
-
 trainer = Trainer(
     model=model,
     args=training_args,
@@ -109,11 +107,8 @@ trainer = Trainer(
     data_collator=data_collator,
     tokenizer=tokenizer,
 )
-
-# %%
 trainer.train()
 
-# %%
 # Step 8: 保存模型
 trainer.save_model(
     "/opt/project/KG_Assist_LLM/data/pand/bert_train/model_save")
