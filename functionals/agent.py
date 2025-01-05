@@ -159,12 +159,15 @@ Analyze the AUTHOR'S TEXT carefully, and provide a detailed and thoughtful respo
         else:
             return 0.1
 
-    @staticmethod
-    def vote_result(mbti_vote_final, vote1, vote2):
+    def vote_result(self, mbti_vote_final, vote1, vote2):
         if mbti_vote_final[vote1][0] > mbti_vote_final[vote2][0]:
             mbti_vote_final.pop(vote2)
+            mbti_vote_final[vote1][1] = self.score_reset(
+                mbti_vote_final[vote1][1])
         else:
             mbti_vote_final.pop(vote1)
+            mbti_vote_final[vote2][1] = self.score_reset(
+                mbti_vote_final[vote2][1])
 
     def circle_chat(self, task, chats, nums, max_depth=3):
         if nums > max_depth:
