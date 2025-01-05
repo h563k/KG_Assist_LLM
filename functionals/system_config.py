@@ -25,9 +25,12 @@ class ModelConfig:
     def cats_id(self):
         return self.configs['LIWC']['cats_id']
 
-    @property
-    def mbti_data(self):
-        data_path = self.mbti['data_path']
-        data_path = os.path.join(self.file_path, data_path)
-        data = pd.read_csv(data_path)
-        return data
+    def mbti_data(self, dataset):
+        data_path = self.mbti[dataset]
+        if dataset == 'kaggle':
+            data_path = os.path.join(self.file_path, data_path)
+            data = pd.read_csv(data_path)
+            return data
+        elif dataset == 'pand':
+            # TODO 增加潘多拉数据处理支持
+            pass

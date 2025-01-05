@@ -235,6 +235,7 @@ Analyze the AUTHOR'S TEXT carefully, and provide a detailed and thoughtful respo
         self.chat_result['vote_predict'] = "".join(mbti_vote_final.keys())
 
     # TODO 下一步补充辩论环节，目前来看总结者可能不需要？得重写此函数
+    # TODO 增加置信度转换
     def final_predict(self, nums, task):
         final_predict = f"""### Original text of the user's statement.
 {task}\n\n
