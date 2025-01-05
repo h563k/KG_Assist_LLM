@@ -145,6 +145,7 @@ Analyze the AUTHOR'S TEXT carefully, and provide a detailed and thoughtful respo
             temp.append(chat[0].chat_history[1])
         self.chat_result['first_chats'] = temp
         return first_chats_list
+
     @staticmethod
     def score_reset(score: float):
         if score == 1.0:
@@ -157,12 +158,14 @@ Analyze the AUTHOR'S TEXT carefully, and provide a detailed and thoughtful respo
             return 0.3
         else:
             return 0.1
+
     @staticmethod
     def vote_result(mbti_vote_final, vote1, vote2):
         if mbti_vote_final[vote1][0] > mbti_vote_final[vote2][0]:
             mbti_vote_final.pop(vote2)
         else:
             mbti_vote_final.pop(vote1)
+
     def circle_chat(self, task, chats, nums, max_depth=3):
         if nums > max_depth:
             return
@@ -238,12 +241,11 @@ Analyze the AUTHOR'S TEXT carefully, and provide a detailed and thoughtful respo
         # 记录计算结果
         self.chat_result['mbti_vote'] = mbti_vote
 
-
         mbti_vote_final = mbti_vote.copy()
-        vote_result(mbti_vote_final, "E", "I")
-        vote_result(mbti_vote_final, "N", "S")
-        vote_result(mbti_vote_final, "T", "F")
-        vote_result(mbti_vote_final, "J", "P")
+        self.vote_result(mbti_vote_final, "E", "I")
+        self.vote_result(mbti_vote_final, "N", "S")
+        self.vote_result(mbti_vote_final, "T", "F")
+        self.vote_result(mbti_vote_final, "J", "P")
         self.chat_result['mbti_vote_final'] = mbti_vote_final
         self.chat_result['vote_predict'] = "".join(mbti_vote_final.keys())
 
