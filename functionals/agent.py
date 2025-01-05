@@ -126,7 +126,13 @@ Analyze the AUTHOR'S TEXT carefully, and provide a detailed and thoughtful respo
         Commentator = ConversableAgent(
             name="Commentator",
             llm_config=self.llm_config,
-            system_message="""You are an MBTI personality expert. Please read a piece of text posted by a user, as well as the conclusions given by three experts, and select the most likely MBTI personality type from the conclusions based on the original text. Provide the answer directly without analysis.""",
+            system_message="""You are an MBTI personality expert. Please read the given AUTHOR'S TEXT and carefully review the following solutions from Semantic, Sentiment, and Linguistic agents as additional information, determine the MBTI personality type.
+
+Use the following format for your response: 
+```
+1. **Classification**: type (e.g. "E") vs. type (e.g. "I"): [Your decision, e.g., "E"] 
+2. **Reason**: [Explain the reasoning behind your choice, e.g., "The user frequently discusses external social activities and expresses energy from interactions with others."] 
+3. **Confidence level**: [Your confidence score, e.g., "0.8"] """,
             description="""Review Expert, to conduct the final analysis and summary.""",
             human_input_mode="NEVER",
         )
@@ -159,16 +165,6 @@ Analyze the AUTHOR'S TEXT carefully, and provide a detailed and thoughtful respo
         else:
             return 0.1
 
-    def vote_result(self, mbti_vote_final, vote1, vote2):
-        if mbti_vote_final[vote1][0] > mbti_vote_final[vote2][0]:
-            mbti_vote_final.pop(vote2)
-            mbti_vote_final[vote1][1] = self.score_reset(
-                mbti_vote_final[vote1][1])
-        else:
-            mbti_vote_final.pop(vote1)
-            mbti_vote_final[vote2][1] = self.score_reset(
-                mbti_vote_final[vote2][1])
-
     def circle_chat(self, task, chats, nums, max_depth=3):
         if nums > max_depth:
             return
@@ -193,8 +189,7 @@ Analyze the AUTHOR'S TEXT carefully, and provide a detailed and thoughtful respo
         return self.circle_chat(task, next_chats, nums + 1, max_depth)
 
     # 按照新的框架，在结束讨论后，我们应当进入一个投票环节， 这个环节主要在于讨论
-    @staticmethod
-    def check_vote(circle_chats: str):
+    def check_vote(self, circle_chats: str):
         expert_votes = ['Semantic', 'Sentiment', 'Linguistic']
         for expert in expert_votes:
             txt = f"The following are speculations from {expert} experts, just for reference, you can stick to your own opinion:"
@@ -205,8 +200,8 @@ Analyze the AUTHOR'S TEXT carefully, and provide a detailed and thoughtful respo
         mbti_predict = re.findall(r'\d\..*?\[(\S+)\]', circle_chats, re.I)
         Confidence = re.findall(
             r'Confidence level: (\d+\.\d+)', circle_chats, re.I)
-        Confidence = [float(i) for i in Confidence]
-        Reason = re.findall(r"(Reason\:.*)\n", circle_chats, re.I)
+        Confidence = [self.score_reset(float(i)) for i in Confidence]
+        Reason = re.findall(r"Reason\:(.*)\n", circle_chats, re.I)
         temp = []
         for i in range(4):
             temp.append([mbti_predict[i], Confidence[i], Reason[i]])
@@ -233,7 +228,6 @@ Analyze the AUTHOR'S TEXT carefully, and provide a detailed and thoughtful respo
         }
 
         for expert, datas in vote_dict.items():
-
             for data in datas:
                 vote_aim = mbti_vote[data[0]]
                 sum_pre = vote_aim[0]*vote_aim[1]
@@ -244,35 +238,54 @@ Analyze the AUTHOR'S TEXT carefully, and provide a detailed and thoughtful respo
         # 记录计算结果
         self.chat_result['mbti_vote'] = mbti_vote
 
-        mbti_vote_final = mbti_vote.copy()
-        self.vote_result(mbti_vote_final, "E", "I")
-        self.vote_result(mbti_vote_final, "N", "S")
-        self.vote_result(mbti_vote_final, "T", "F")
-        self.vote_result(mbti_vote_final, "J", "P")
-        self.chat_result['mbti_vote_final'] = mbti_vote_final
-        self.chat_result['vote_predict'] = "".join(mbti_vote_final.keys())
-
-    # TODO 下一步补充辩论环节，目前来看总结者可能不需要？得重写此函数
-    # TODO 增加置信度转换函数
-    def final_predict(self, nums, task):
-        final_predict = f"""### Original text of the user's statement.
-{task}\n\n
-### Experts' conclusions
-{self.chat_result[f'round_{nums}']}""".replace(', just for reference, you can stick to your own opinion:', ':')
-        final_predict = initiate_chats([
-            self.chat_unit(
-                self.agent_dict['user_proxy'], self.agent_dict['Commentator'], final_predict)
-        ])
-        agent_result = final_predict[0].chat_history[1]
-        self.chat_result['commentator_response'] = agent_result
-
-    def result_clean(self):
-        print(self.chat_result['commentator_response'])
-        mbti_type = re.findall(r"[E|I][S|N][T|F][J|P]",
-                               self.chat_result['commentator_response']['content'])
-        if len(mbti_type) > 1:
-            mbti_type = mbti_type[0]
-        self.chat_result['final_predict'] = mbti_type[0]
+    def battle(self, vote1, vote2, task):
+        mbti_vote = self.chat_result['mbti_vote']
+        mbti_vote = self.chat_result['mbti_vote']
+        vote1_data = mbti_vote[vote1]
+        vote2_data = mbti_vote[vote2]
+        if vote1_data[0] > vote2_data[0]:
+            mbti_type = vote1
+        else:
+            mbti_type = vote2
+        if mbti_vote[mbti_type][1] > 0.5:
+            self.chat_result['final_mbti'].append(mbti_type)
+        else:
+            vote1_reason = "     \n".join(vote1_data[2].values())
+            vote2_reason = "     \n".join(vote2_data[2].values())
+            vote1_content = f"""\n- type ({vote1})
+there are {" ".join(vote1_data[2].keys())} agents think the **Classification** is {vote1}.
+the **Reason** is:
+    {vote1_reason}.
+the **Confidence level** is {vote1_data[1]}."""
+            vote2_content = f"""\n- type ({vote2})
+there are {" ".join(vote2_data[2].keys())} agents think the **Classification** is {vote2}.
+the **Reason** is:
+    {vote2_reason}.
+the **Confidence level** is {vote2_data[1]}."""
+            battle_content = f"""### AUTHOR'S TEXT
+    {task}\n\n
+### Experts' solutions
+In the MBTI dimension of type ({vote1}) vs. type ({vote2}):"""
+            if vote1_data[2].keys():
+                battle_content += vote1_content
+            if vote2_data[2].keys():
+                battle_content += vote2_content
+            self.chat_result[f'battle_content_{vote1}{vote2}'] = battle_content
+            final_predict = initiate_chats([
+                self.chat_unit(
+                    self.agent_dict['user_proxy'], self.agent_dict['Commentator'], battle_content)
+            ])
+            agent_result = final_predict[0].chat_history[1]['content']
+            self.chat_result[f'battle_{vote1}{vote2}'] = agent_result
+            predict = agent_result.split('\n')[0].strip()[-1]
+            self.chat_result['final_mbti'].append(predict[0])
+            
+    def final_predict(self, task):
+        self.chat_result['final_mbti'] = []
+        mbti_types = [['E', 'I'], ['N', 'S'], ['T', 'F'], ['J', 'P']]
+        for vote1, vote2 in mbti_types:
+            self.battle(vote1, vote2, task)
+        self.chat_result['final_mbti'] = "".join(self.chat_result['final_mbti'])
 
     @retry(wait=wait_random_exponential(min=1, max=60), stop=stop_after_attempt(6))
     @log_to_file
@@ -282,6 +295,5 @@ Analyze the AUTHOR'S TEXT carefully, and provide a detailed and thoughtful respo
         first_chats = self.first_chats(task)
         self.circle_chat(task, first_chats, 1, self.max_round)
         self.vote()
-        # self.final_predict(self.max_round, task)
-        # self.result_clean()
+        self.final_predict(task)
         return self.chat_result
