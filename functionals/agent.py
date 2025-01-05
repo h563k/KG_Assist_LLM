@@ -145,7 +145,24 @@ Analyze the AUTHOR'S TEXT carefully, and provide a detailed and thoughtful respo
             temp.append(chat[0].chat_history[1])
         self.chat_result['first_chats'] = temp
         return first_chats_list
-
+    @staticmethod
+    def score_reset(score: float):
+        if score == 1.0:
+            return 1.0
+        elif 0.9 <= score < 1.0:
+            return 0.8
+        elif 0.8 <= score < 0.9:
+            return 0.5
+        elif 0.6 <= score < 0.8:
+            return 0.3
+        else:
+            return 0.1
+    @staticmethod
+    def vote_result(mbti_vote_final, vote1, vote2):
+        if mbti_vote_final[vote1][0] > mbti_vote_final[vote2][0]:
+            mbti_vote_final.pop(vote2)
+        else:
+            mbti_vote_final.pop(vote1)
     def circle_chat(self, task, chats, nums, max_depth=3):
         if nums > max_depth:
             return
@@ -221,11 +238,7 @@ Analyze the AUTHOR'S TEXT carefully, and provide a detailed and thoughtful respo
         # 记录计算结果
         self.chat_result['mbti_vote'] = mbti_vote
 
-        def vote_result(mbti_vote_final, vote1, vote2):
-            if mbti_vote_final[vote1][0] > mbti_vote_final[vote2][0]:
-                mbti_vote_final.pop(vote2)
-            else:
-                mbti_vote_final.pop(vote1)
+
         mbti_vote_final = mbti_vote.copy()
         vote_result(mbti_vote_final, "E", "I")
         vote_result(mbti_vote_final, "N", "S")
@@ -235,7 +248,7 @@ Analyze the AUTHOR'S TEXT carefully, and provide a detailed and thoughtful respo
         self.chat_result['vote_predict'] = "".join(mbti_vote_final.keys())
 
     # TODO 下一步补充辩论环节，目前来看总结者可能不需要？得重写此函数
-    # TODO 增加置信度转换
+    # TODO 增加置信度转换函数
     def final_predict(self, nums, task):
         final_predict = f"""### Original text of the user's statement.
 {task}\n\n
