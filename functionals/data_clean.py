@@ -24,10 +24,10 @@ def data_process(task: str, deepclean=True, cutoff=3500):
                 continue
             body = ' '.join(test)
             sentences.append(body)
+    count = 0
+    process = []
     # 不进行bert筛选，直接长度截断
-    if not deepclean:
-        count = 0
-        process = []
+    if not deepclean:   
         for message in sentences:
             process.append(message)
             count += len(message)
@@ -35,14 +35,12 @@ def data_process(task: str, deepclean=True, cutoff=3500):
                 break
         return "\n".join(process)
     # bert筛选
-    count = 0
-    bert_process = []
     for message in sentences:
         is_mbti = bert_api(message)
         if is_mbti:
-            bert_process.append(message)
+            process.append(message)
             count += len(message)
         if count > cutoff:
             break
-    txt = "\n".join(bert_process)
+    txt = "\n".join(process)
     return txt
