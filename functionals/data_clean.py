@@ -14,8 +14,6 @@ def data_process(task: str, deepclean=True, cutoff=3500):
             message = message.replace(web, '')
         temp.append(message) if message else None
     txt = "\n".join(temp)
-    if not deepclean:
-        return txt
     # bert筛选，先进行句子拆分
     sentences = []
     for contents in txt.split('\n'):
@@ -26,10 +24,20 @@ def data_process(task: str, deepclean=True, cutoff=3500):
                 continue
             body = ' '.join(test)
             sentences.append(body)
-    # 按长度截断
+    # 不进行bert筛选，直接长度截断
+    if not deepclean:
+        count = 0
+        process = []
+        for message in sentences:
+            process.append(message)
+            count += len(message)
+            if count > cutoff:
+                break
+        return "\n".join(process)
+    # bert筛选
     count = 0
     bert_process = []
-    for  message in sentences:
+    for message in sentences:
         is_mbti = bert_api(message)
         if is_mbti:
             bert_process.append(message)
