@@ -126,7 +126,7 @@ Analyze the AUTHOR'S TEXT carefully, and provide a detailed and thoughtful respo
         Commentator = ConversableAgent(
             name="Commentator",
             llm_config=self.llm_config,
-            system_message="""You are an MBTI personality expert. Please read the given AUTHOR'S TEXT and carefully review the following solutions from Semantic, Sentiment, and Linguistic agents as additional information, determine the MBTI personality type.
+            system_message="""You are an arbiter with expertise in the MBTI domain. Please read the given AUTHOR'S TEXT and carefully review the following solutions from Semantic, Sentiment, and Linguistic agents as additional information, determine the MBTI personality type .
 
 Use the following format for your response: 
 ```
