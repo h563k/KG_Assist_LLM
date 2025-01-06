@@ -160,6 +160,7 @@ Use the following format for your response:
             return 0.8
         elif 0.8 <= score < 0.9:
             return 0.5
+            return 0.5
         elif 0.6 <= score < 0.8:
             return 0.3
         else:
