@@ -164,6 +164,7 @@ Use the following format for your response:
         else:
             return 0.1
     # TODO 后期考虑增加一个提前结束判断, 当三个专家在四个维度均达成一致时, 提前结束循环
+
     def circle_chat(self, task, chats, nums, max_depth=3):
         if nums > max_depth:
             return
@@ -196,9 +197,9 @@ Use the following format for your response:
                 continue
             voter = expert
         circle_chats = circle_chats.replace(txt, '')
-        mbti_predict = re.findall(r'\d\..*?\[(\S+)\]', circle_chats, re.I)
+        mbti_predict = re.findall(r'vs.*?\[(\S+)\].*?\n', circle_chats, re.I)
         Confidence = re.findall(
-            r'Confidence level: (\d+\.\d+)', circle_chats, re.I)
+            r'\n.*?Confidence.*?(\d+\.\d+)', circle_chats, re.I)
         Confidence = [float(i) for i in Confidence]
         Reason = re.findall(r"Reason\:(.*)\n", circle_chats, re.I)
         temp = []
@@ -288,7 +289,7 @@ In the MBTI dimension of type ({vote1}) vs. type ({vote2}):"""
         self.chat_result['final_mbti'] = "".join(
             self.chat_result['final_mbti'])
 
-    @retry(wait=wait_random_exponential(min=1, max=60), stop=stop_after_attempt(6))
+    @retry(wait=wait_random_exponential(min=1, max=45), stop=stop_after_attempt(6))
     @log_to_file
     def run(self, task):
         task = data_process(task, deepclean=self.deepclean, cutoff=self.cutoff)
