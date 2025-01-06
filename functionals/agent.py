@@ -16,7 +16,7 @@ mbti = config.mbti
 
 
 class MbtiChats:
-    def __init__(self, max_round=mbti['max_round'], nums=mbti['nums'], openai_type=mbti['openai_type'], model=mbti['model'], deepclean=mbti['deepclean'], cutoff=mbti['cutoff']) -> None:
+    def __init__(self, max_round=mbti['max_round'], openai_type=mbti['openai_type'], model=mbti['model'], deepclean=mbti['deepclean'], cutoff=mbti['cutoff']) -> None:
         """
         :param max_round: Number of rounds for free discussion among three agents. 
         专家讨论的轮数
@@ -31,7 +31,6 @@ class MbtiChats:
                          'gpt-4'], "Please select the correct model type."
         self.model = model
         self.llm_config = self.env_init(openai_type)
-        self.nums = nums
         self.max_round = max_round
         self.chat_result = {}
         self.agent_dict = {
