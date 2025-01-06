@@ -13,7 +13,7 @@ def mbti_analysis(start, end, dataset='kaggle'):
     result = []
     for i, (mbti_real, task) in enumerate(data.values[start:end]):
         mbti.run(task)
-        result.append([i, mbti_real, mbti.chat_result['final_predict']])
+        result.append([i, mbti_real, mbti.chat_result['final_mbti']])
     count = np.zeros(4)
     for _, mbti_real, mbti_predict in result:
         for i in range(4):
