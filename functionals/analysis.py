@@ -9,7 +9,7 @@ from functionals.standard_log import log_to_file
 def mbti_analysis(start, end, dataset='kaggle'):
     result = []
     config = ModelConfig()
-    data = config.mbti_data[dataset]
+    data = config.mbti_data(dataset)
     mbti = MbtiChats()
     try:
         for i, (mbti_real, task) in enumerate(data.values[start:end]):
