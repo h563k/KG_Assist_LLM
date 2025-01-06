@@ -188,7 +188,7 @@ Use the following format for your response:
 
         return self.circle_chat(task, next_chats, nums + 1, max_depth)
 
-    # 按照新的框架，在结束讨论后，我们应当进入一个投票环节， 这个环节主要在于讨论
+    # 按照新的框架，在结束讨论后，我们应当进入一个投票环节， 交给法官角色做最后判断
     def check_vote(self, circle_chats: str):
         expert_votes = ['Semantic', 'Sentiment', 'Linguistic']
         for expert in expert_votes:
@@ -247,7 +247,8 @@ Use the following format for your response:
             mbti_type = vote1
         else:
             mbti_type = vote2
-        if mbti_vote[mbti_type][1] > 0.5:
+        # 投票完全一致 或者2位专家均给出0.5以上分数不进入辩论环节
+        if mbti_vote[mbti_type][1] > 0.5 or mbti_vote[mbti_type][0] == 3:
             self.chat_result['final_mbti'].append(mbti_type)
         else:
             vote1_reason = "     \n".join(vote1_data[2].values())
