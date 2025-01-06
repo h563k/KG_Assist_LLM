@@ -23,4 +23,5 @@ def mbti_analysis(start, end, dataset='kaggle'):
         count /= len(result)
         return [f"{x*100:.4f}%" for x in count], stats.hmean(count), len(result)
     except Exception as e:
+        print(e)
         return result
