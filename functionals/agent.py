@@ -160,12 +160,11 @@ Use the following format for your response:
             return 0.8
         elif 0.8 <= score < 0.9:
             return 0.5
-            return 0.5
         elif 0.6 <= score < 0.8:
             return 0.3
         else:
             return 0.1
-
+    # TODO 后期考虑增加一个提前结束判断, 当三个专家在四个维度均达成一致时, 提前结束循环
     def circle_chat(self, task, chats, nums, max_depth=3):
         if nums > max_depth:
             return
@@ -201,7 +200,7 @@ Use the following format for your response:
         mbti_predict = re.findall(r'\d\..*?\[(\S+)\]', circle_chats, re.I)
         Confidence = re.findall(
             r'Confidence level: (\d+\.\d+)', circle_chats, re.I)
-        Confidence = [self.score_reset(float(i)) for i in Confidence]
+        Confidence = [float(i) for i in Confidence]
         Reason = re.findall(r"Reason\:(.*)\n", circle_chats, re.I)
         temp = []
         for i in range(4):
@@ -231,12 +230,12 @@ Use the following format for your response:
         for expert, datas in vote_dict.items():
             for data in datas:
                 vote_aim = mbti_vote[data[0]]
-                sum_pre = vote_aim[0]*vote_aim[1]
                 vote_aim[0] += 1
-                sum_pre += data[1]
-                vote_aim[1] = sum_pre/vote_aim[0]
+                vote_aim[1] = max(vote_aim[1], data[1])
                 vote_aim[2][expert] = data[2]
         # 记录计算结果
+        for _, vote_aim in mbti_vote.items():
+            vote_aim[1] = self.score_reset(vote_aim[1])
         self.chat_result['mbti_vote'] = mbti_vote
 
     def battle(self, vote1, vote2, task):
@@ -280,13 +279,14 @@ In the MBTI dimension of type ({vote1}) vs. type ({vote2}):"""
             self.chat_result[f'battle_{vote1}{vote2}'] = agent_result
             predict = agent_result.split('\n')[0].strip()[-1]
             self.chat_result['final_mbti'].append(predict[0])
-            
+
     def final_predict(self, task):
         self.chat_result['final_mbti'] = []
         mbti_types = [['E', 'I'], ['N', 'S'], ['T', 'F'], ['J', 'P']]
         for vote1, vote2 in mbti_types:
             self.battle(vote1, vote2, task)
-        self.chat_result['final_mbti'] = "".join(self.chat_result['final_mbti'])
+        self.chat_result['final_mbti'] = "".join(
+            self.chat_result['final_mbti'])
 
     @retry(wait=wait_random_exponential(min=1, max=60), stop=stop_after_attempt(6))
     @log_to_file
