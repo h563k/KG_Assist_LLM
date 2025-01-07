@@ -5,14 +5,14 @@ import functools
 from datetime import datetime
 
 
-now = datetime.now().strftime("%Y-%m-%d_%H:%M:%S")
+
 
 
 def log_to_file(func):
     file_path = os.path.abspath(__file__)
     file_path = os.path.dirname(os.path.dirname(file_path))
     file_path = os.path.join(file_path, 'logs')
-
+    now = datetime.now().strftime("%Y%m%d_%H%M%S")
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
         # 获取函数名称作为日志文件名的基础
@@ -40,6 +40,7 @@ def log_to_file(func):
 
 
 def debug(json_data, json_name):
+    now = datetime.now().strftime("%Y%m%d")
     with open(f"/opt/project/KG_Assist_LLM/logs/debug/{json_name}_{now}.josn", "w") as f:
         json.dump(json_data, f, indent=4)
 

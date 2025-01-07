@@ -211,28 +211,33 @@ Use the following format for your response:
         print(circle_chats)
         circle_chats = circle_chats.split("\n\n")
         temp = []
-        for circle_chat in circle_chats:
+        for circle_chat in circle_chats[:4]:
             mbti_predict = self.get_mbti_predict(circle_chat)
             Confidence = re.findall(
                 r'\n.*?Confidence.*?(\d+\.\d+)', circle_chat, re.I)[0]
             Confidence = float(Confidence)
-            Reason = re.findall(r"Reason\:(.*)\n", circle_chat, re.I)[0]
+            Reason = re.findall(r"Reason\:(.*)\n",
+                                circle_chat, re.I)[0].strip()
             result = [mbti_predict, Confidence, Reason]
             temp.append(result)
-            print(result)
         print('step4-3')
+        print(temp)
         return voter, temp
 
     def vote(self):
         circle_chat_final = self.chat_result[f'round_{self.max_round}']
         vote_dict = {}
+        print('step4-1')
         for circle_chats in circle_chat_final:
-            print('step4-1')
             voter, circle_chat = self.check_vote(circle_chats)
             vote_dict[voter] = circle_chat
+            print('step4-3-1')
+            print(vote_dict)
         # 记录提取结果
+        print('step4-3-2')
         self.chat_result['vote_dict'] = vote_dict
         # 数据结构 ‘E’: [‘投票数量’， '平均分'， {'投票人':Reason}]
+        print('step4-3-3')
         mbti_vote = {
             'E': [0, 0, {}],
             'I': [0, 0, {}],
@@ -312,7 +317,7 @@ In the MBTI dimension of type ({vote1}) vs. type ({vote2}):"""
         self.chat_result['final_mbti'] = "".join(
             self.chat_result['final_mbti'])
 
-    @retry(wait=wait_random_exponential(min=1, max=60), stop=stop_after_attempt(6))
+    # @retry(wait=wait_random_exponential(min=1, max=60), stop=stop_after_attempt(6))
     @log_to_file
     def run(self, task):
         print('step1')
