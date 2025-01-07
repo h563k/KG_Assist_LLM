@@ -20,7 +20,7 @@ def log_to_file(func):
 
         # 配置日志
         logging.basicConfig(
-            filename=log_filename
+            filename=log_filename,
             level=logging.INFO,
             format='%(asctime)s - %(levelname)s - %(message)s',
             datefmt='%Y-%m-%d %H:%M:%S'
