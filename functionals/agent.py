@@ -211,7 +211,14 @@ Use the following format for your response:
         print(circle_chats)
         circle_chats = circle_chats.split("\n\n")
         temp = []
-        for circle_chat in circle_chats[:4]:
+        start = ['1','2','3','4']
+        for circle_chat in circle_chats:
+            come_on = False
+            for key in start:
+                if circle_chat.startswith(key):
+                    come_on = True
+            if not come_on:
+                continue
             mbti_predict = self.get_mbti_predict(circle_chat)
             Confidence = re.findall(
                 r'\n.*?Confidence.*?(\d+\.\d+)', circle_chat, re.I)[0]
