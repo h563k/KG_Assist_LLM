@@ -200,32 +200,34 @@ Use the following format for your response:
 
     # 按照新的框架，在结束讨论后，我们应当进入一个投票环节， 交给法官角色做最后判断
     def check_vote(self, circle_chats: str):
-        debug_json = {}
         expert_votes = ['Semantic', 'Sentiment', 'Linguistic']
         for expert in expert_votes:
-            txt = f"The following are speculations from {expert} experts, just for reference, you can stick to your own opinion:"
-            if expert not in circle_chats:
-                continue
-            voter = expert
-        circle_chats = circle_chats.replace(txt, '')
-        mbti_predict = self.get_mbti_predict(circle_chats)
-        Confidence = re.findall(
-            r'\n.*?Confidence.*?(\d+\.\d+)', circle_chats, re.I)
-        Confidence = [float(i) for i in Confidence]
-        Reason = re.findall(r"Reason\:(.*)\n", circle_chats, re.I)
-        debug_json['mbti_predict'] = mbti_predict
-        debug_json['Confidence'] = Confidence
-        debug_json['Reason'] = Reason
-        debug(debug_json, f"{expert}_{voter}")
+            txt = f"The following are speculations from {expert} experts, just for reference, you can stick to your own opinion:\n "
+            if expert in circle_chats:
+                voter = expert
+                break
+        circle_chats = circle_chats.replace(txt, '').strip()
+        print('step4-2')
+        print(circle_chats)
+        circle_chats = circle_chats.split("\n\n")
         temp = []
-        for i in range(4):
-            temp.append([mbti_predict[i], Confidence[i], Reason[i]])
+        for circle_chat in circle_chats:
+            mbti_predict = self.get_mbti_predict(circle_chat)
+            Confidence = re.findall(
+                r'\n.*?Confidence.*?(\d+\.\d+)', circle_chat, re.I)
+            Confidence = [float(i) for i in Confidence]
+            Reason = re.findall(r"Reason\:(.*)\n", circle_chat, re.I)
+            result = [mbti_predict, Confidence, Reason]
+            temp.append(result)
+            print(result)
+        print('step4-3')
         return voter, temp
 
     def vote(self):
         circle_chat_final = self.chat_result[f'round_{self.max_round}']
         vote_dict = {}
         for circle_chats in circle_chat_final:
+            print('step4-1')
             voter, circle_chat = self.check_vote(circle_chats)
             vote_dict[voter] = circle_chat
         # 记录提取结果
@@ -304,13 +306,19 @@ In the MBTI dimension of type ({vote1}) vs. type ({vote2}):"""
         self.chat_result['final_mbti'] = "".join(
             self.chat_result['final_mbti'])
 
-    @retry(wait=wait_random_exponential(min=1, max=45), stop=stop_after_attempt(6))
+    @retry(wait=wait_random_exponential(min=1, max=60), stop=stop_after_attempt(6))
     @log_to_file
     def run(self, task):
+        print('step1')
         task = data_process(task, deepclean=self.deepclean, cutoff=self.cutoff)
         self.chat_result['origin_task'] = task
+        print('step2')
         first_chats = self.first_chats(task)
+        print('step3')
         self.circle_chat(task, first_chats, 1, self.max_round)
+        print('step4')
         self.vote()
+        print('step5')
         self.final_predict(task)
+        print('step6')
         return self.chat_result
