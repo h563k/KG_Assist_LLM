@@ -4,11 +4,7 @@ from autogen import initiate_chats, ConversableAgent
 from functionals.system_config import ModelConfig
 from functionals.standard_log import log_to_file, debug
 from functionals.data_clean import data_process
-from tenacity import (
-    retry,
-    stop_after_attempt,
-    wait_random_exponential,
-)  # for exponential backoff
+from functionals.speed import retry_with_exponential_backoff
 
 
 config = ModelConfig()
@@ -324,7 +320,7 @@ In the MBTI dimension of type ({vote1}) vs. type ({vote2}):"""
         self.chat_result['final_mbti'] = "".join(
             self.chat_result['final_mbti'])
 
-    # @retry(wait=wait_random_exponential(min=1, max=60), stop=stop_after_attempt(6))
+    @retry_with_exponential_backoff
     @log_to_file
     def run(self, task):
         print('step1')

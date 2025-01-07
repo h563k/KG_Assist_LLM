@@ -2,4 +2,4 @@ from functionals.analysis import mbti_analysis
 
 
 if __name__ == '__main__':
-    mbti_analysis(start=27, end=3002, dataset='kaggle')
+    mbti_analysis(start=38, end=3002, dataset='kaggle')
