@@ -1,6 +1,8 @@
 import os
+import json
 import logging
 import functools
+from datetime import datetime
 
 
 def log_to_file(func):
@@ -33,9 +35,14 @@ def log_to_file(func):
 
     return wrapper
 
+
+def debug(json_data, json_name):
+    now = datetime.now().strftime("%Y-%m-%d_%H:%M")
+    with open(f"/opt/project/KG_Assist_LLM/logs/debug/{json_name}_{now}.josn", "w") as f:
+        json.dump(json_data, f, indent=4)
+
+
 # 示例使用
-
-
 if __name__ == "__main__":
     @log_to_file
     def example_function():

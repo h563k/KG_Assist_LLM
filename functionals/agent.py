@@ -2,7 +2,7 @@ import os
 import re
 from autogen import initiate_chats, ConversableAgent
 from functionals.system_config import ModelConfig
-from functionals.standard_log import log_to_file
+from functionals.standard_log import log_to_file, debug
 from functionals.data_clean import data_process
 from tenacity import (
     retry,
@@ -200,6 +200,7 @@ Use the following format for your response:
 
     # 按照新的框架，在结束讨论后，我们应当进入一个投票环节， 交给法官角色做最后判断
     def check_vote(self, circle_chats: str):
+        debug_json = {}
         expert_votes = ['Semantic', 'Sentiment', 'Linguistic']
         for expert in expert_votes:
             txt = f"The following are speculations from {expert} experts, just for reference, you can stick to your own opinion:"
@@ -212,6 +213,10 @@ Use the following format for your response:
             r'\n.*?Confidence.*?(\d+\.\d+)', circle_chats, re.I)
         Confidence = [float(i) for i in Confidence]
         Reason = re.findall(r"Reason\:(.*)\n", circle_chats, re.I)
+        debug_json['mbti_predict'] = mbti_predict
+        debug_json['Confidence'] = Confidence
+        debug_json['Reason'] = Reason
+        debug(debug_json, f"{expert}_{voter}")
         temp = []
         for i in range(4):
             temp.append([mbti_predict[i], Confidence[i], Reason[i]])
