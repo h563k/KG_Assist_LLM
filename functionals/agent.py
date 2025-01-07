@@ -184,20 +184,12 @@ Use the following format for your response:
 
         return self.circle_chat(task, next_chats, nums + 1, max_depth)
 
-    def get_mbti_predict(self, circle_chats: str):
+    @staticmethod
+    def get_mbti_predict(circle_chats: str):
         circle_chats = circle_chats.split("\n")[0]
-        mbti_predict = re.findall(r'\[(.*?)\]|\((.*?)\)', circle_chats, re.I)
-        mbti_predict = mbti_predict[-1]
-        temp = []
-        for mbti in mbti_predict:
-            if mbti:
-                temp.append(mbti)
-        mbti_predict = temp
-        if len(mbti_predict) == 1:
-            mbti_predict = mbti_predict[0]
-            if len(mbti_predict) == 1:
-                return mbti_predict
-        return self.get_mbti_predict(mbti_predict)
+        mbti_predict = re.findall('E|I|S|N|T|F|J|P', circle_chats)
+        if mbti_predict:
+            return mbti_predict[-1]
 
     # 按照新的框架，在结束讨论后，我们应当进入一个投票环节， 交给法官角色做最后判断
     def check_vote(self, circle_chats: str):
