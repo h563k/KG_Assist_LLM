@@ -214,9 +214,9 @@ Use the following format for your response:
         for circle_chat in circle_chats:
             mbti_predict = self.get_mbti_predict(circle_chat)
             Confidence = re.findall(
-                r'\n.*?Confidence.*?(\d+\.\d+)', circle_chat, re.I)
-            Confidence = [float(i) for i in Confidence]
-            Reason = re.findall(r"Reason\:(.*)\n", circle_chat, re.I)
+                r'\n.*?Confidence.*?(\d+\.\d+)', circle_chat, re.I)[0]
+            Confidence = float(Confidence)
+            Reason = re.findall(r"Reason\:(.*)\n", circle_chat, re.I)[0]
             result = [mbti_predict, Confidence, Reason]
             temp.append(result)
             print(result)
@@ -243,16 +243,20 @@ Use the following format for your response:
             'J': [0, 0, {}],
             'P': [0, 0, {}]
         }
-
+        print('step4-4')
+        print(vote_dict)
         for expert, datas in vote_dict.items():
             for data in datas:
                 vote_aim = mbti_vote[data[0]]
                 vote_aim[0] += 1
                 vote_aim[1] = max(vote_aim[1], data[1])
                 vote_aim[2][expert] = data[2]
+        print(mbti_vote)
         # 记录计算结果
         for _, vote_aim in mbti_vote.items():
             vote_aim[1] = self.score_reset(vote_aim[1])
+        print('step4-5')
+        print(mbti_vote)
         self.chat_result['mbti_vote'] = mbti_vote
 
     def battle(self, vote1, vote2, task):
@@ -264,6 +268,8 @@ Use the following format for your response:
             mbti_type = vote1
         else:
             mbti_type = vote2
+        print('step5-1')
+        print(mbti_type)
         # 投票完全一致 或者2位专家均给出0.5以上分数不进入辩论环节
         if mbti_vote[mbti_type][1] > 0.5 or mbti_vote[mbti_type][0] == 3:
             self.chat_result['final_mbti'].append(mbti_type)
