@@ -219,7 +219,7 @@ Use the following format for your response:
             Confidence = re.findall(
                 r'\n.*?Confidence.*?(\d+\.\d+)', circle_chat, re.I)[0]
             Confidence = float(Confidence)
-            Reason = re.findall(r"Reason\:(.*)\n",
+            Reason = re.findall(r"Reason(.*)\n",
                                 circle_chat, re.I)[0].strip()
             result = [mbti_predict, Confidence, Reason]
             temp.append(result)
@@ -282,17 +282,17 @@ Use the following format for your response:
         if mbti_vote[mbti_type][1] > 0.5 or mbti_vote[mbti_type][0] == 3:
             self.chat_result['final_mbti'].append(mbti_type)
         else:
-            vote1_reason = "     \n".join(vote1_data[2].values())
-            vote2_reason = "     \n".join(vote2_data[2].values())
+            vote1_reason = "\n    Reason ".join(vote1_data[2].values())
+            vote2_reason = "\n    Reason ".join(vote2_data[2].values())
             vote1_content = f"""\n- type ({vote1})
 there are {" ".join(vote1_data[2].keys())} agents think the **Classification** is {vote1}.
 the **Reason** is:
-    {vote1_reason}.
+    Reason {vote1_reason}.
 the **Confidence level** is {vote1_data[1]}."""
             vote2_content = f"""\n- type ({vote2})
 there are {" ".join(vote2_data[2].keys())} agents think the **Classification** is {vote2}.
 the **Reason** is:
-    {vote2_reason}.
+    Reason {vote2_reason}.
 the **Confidence level** is {vote2_data[1]}."""
             battle_content = f"""### AUTHOR'S TEXT
     {task}\n\n
