@@ -10,17 +10,20 @@ from functionals.standard_log import log_to_file, debug
 def get_start():
     _, _, file_name = os.walk(
         '/opt/project/KG_Assist_LLM/logs/debug').__next__()
-    file_name = [name.split('_') for name in file_name]
-    file_name.sort(key=lambda x: x[1])
-    file_name = file_name[-1]
-    start = int(file_name[1])
-    file_name = "_".join(file_name)
-    with open(f"/opt/project/KG_Assist_LLM/logs/debug/{file_name}", 'r') as f:
-        data = json.load(f)
-    for num in data:
-        start = max(start, (num[0]))
-    start = start + 1
-    return start
+    if file_name:
+        file_name = [name.split('_') for name in file_name]
+        file_name.sort(key=lambda x: x[1])
+        file_name = file_name[-1]
+        start = int(file_name[1])
+        file_name = "_".join(file_name)
+        with open(f"/opt/project/KG_Assist_LLM/logs/debug/{file_name}", 'r') as f:
+            data = json.load(f)
+        for num in data:
+            start = max(start, (num[0]))
+        start = start + 1
+        return start
+    else:
+        return 0
 
 
 @log_to_file
@@ -28,13 +31,13 @@ def mbti_analysis(start, end, dataset='kaggle'):
     result = []
     config = ModelConfig()
     data = config.mbti_data(dataset)
-    mbti = MbtiChats()
     try:
         start = max(get_start(), start)
         print(f"start: {start}")
         for i, (mbti_real, task) in enumerate(data.values[start:end]):
             print("origin_task")
             print(task)
+            mbti = MbtiChats()
             mbti.run(task)
             result.append(
                 [i+start, mbti_real, mbti.chat_result['final_mbti'], mbti.chat_result])

@@ -310,7 +310,10 @@ In the MBTI dimension of type ({vote1}) vs. type ({vote2}):"""
             ])
             agent_result = final_predict[0].chat_history[1]['content']
             self.chat_result[f'battle_{vote1}{vote2}'] = agent_result
-            predict = agent_result.split('\n')[0].strip()[-1]
+            predict = agent_result.split('\n')[0]
+            predict = self.get_mbti_predict(predict)
+            print('step5-2')
+            print(predict)
             self.chat_result['final_mbti'].append(predict[0])
 
     def final_predict(self, task):
