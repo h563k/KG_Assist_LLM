@@ -24,13 +24,14 @@ def get_start():
 
 
 @log_to_file
-def mbti_analysis(end, dataset='kaggle'):
+def mbti_analysis(start, end, dataset='kaggle'):
     result = []
     config = ModelConfig()
     data = config.mbti_data(dataset)
     mbti = MbtiChats()
     try:
-        start = get_start()
+        start = max(get_start(), start)
+        print(f"start: {start}")
         for i, (mbti_real, task) in enumerate(data.values[start:end]):
             print("origin_task")
             print(task)
@@ -47,8 +48,8 @@ def mbti_analysis(end, dataset='kaggle'):
         return [f"{x*100:.4f}%" for x in count], stats.hmean(count), len(result), result
     except Exception as e:
         print(e)
-        debug(result, f"{dataset}_{start}_{end}")
-        return result
+        start += 1
+        mbti_analysis(start, end, dataset)
 
 
 if __name__ == "__main__":
