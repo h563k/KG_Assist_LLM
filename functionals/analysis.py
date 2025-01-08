@@ -7,7 +7,7 @@ from functionals.system_config import ModelConfig
 from functionals.standard_log import log_to_file, debug
 
 
-def get_start_end():
+def get_start():
     _, _, file_name = os.walk(
         '/opt/project/KG_Assist_LLM/logs/debug').__next__()
     file_name = [name.split('_') for name in file_name]
@@ -20,6 +20,7 @@ def get_start_end():
     for num in data:
         start = max(start, (num[0]))
     start = start + 1
+    return start
 
 
 @log_to_file
@@ -29,7 +30,7 @@ def mbti_analysis(end, dataset='kaggle'):
     data = config.mbti_data(dataset)
     mbti = MbtiChats()
     try:
-        start = get_start_end()
+        start = get_start()
         for i, (mbti_real, task) in enumerate(data.values[start:end]):
             print("origin_task")
             print(task)
@@ -48,3 +49,7 @@ def mbti_analysis(end, dataset='kaggle'):
         print(e)
         debug(result, f"{dataset}_{start}_{end}")
         return result
+
+
+if __name__ == "__main__":
+    print(get_start())
