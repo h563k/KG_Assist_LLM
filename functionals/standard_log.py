@@ -12,7 +12,7 @@ def log_to_file(func):
     file_path = os.path.abspath(__file__)
     file_path = os.path.dirname(os.path.dirname(file_path))
     file_path = os.path.join(file_path, 'logs')
-    now = datetime.now().strftime("%Y%m%d_%H%M%S")
+    now = datetime.now().strftime("%Y%m%d_%H")
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
         # 获取函数名称作为日志文件名的基础
