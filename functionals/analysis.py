@@ -39,8 +39,10 @@ def mbti_analysis(start, end, dataset='kaggle'):
             print(task)
             mbti = MbtiChats()
             mbti.run(task)
-            result.append(
-                [i+start, mbti_real, mbti.chat_result['final_mbti'], mbti.chat_result])
+            final_mbti = mbti.chat_result['final_mbti']
+            if final_mbti[0] in "EI" and final_mbti[1] in "SN" and final_mbti[2] in "TF" and final_mbti[3] in "JP":
+                result.append(
+                    [i+start, mbti_real, mbti.chat_result['final_mbti'], mbti.chat_result])
             debug(result, f"{dataset}_{start}_{end}")
         count = np.zeros(4)
         for _, mbti_real, mbti_predict, _ in result:
