@@ -28,10 +28,6 @@ class ModelConfig:
     def mbti_data(self, dataset):
         assert dataset in ['kaggle', 'pand'], 'dataset must be kaggle or pand'
         data_path = self.mbti[dataset]
-        if dataset == 'kaggle':
-            data_path = os.path.join(self.file_path, data_path)
-            data = pd.read_csv(data_path)
-            return data
-        elif dataset == 'pand':
-            # TODO 增加潘多拉数据处理支持
-            pass
+        data_path = os.path.join(self.file_path, data_path)
+        data = pd.read_csv(data_path)
+        return data
