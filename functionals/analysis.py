@@ -28,7 +28,7 @@ def get_start():
 
 @log_to_file
 def mbti_analysis(start, end, dataset='kaggle'):
-    result = {}
+    result = []
     config = ModelConfig()
     data = config.mbti_data(dataset)
     try:
@@ -39,8 +39,8 @@ def mbti_analysis(start, end, dataset='kaggle'):
             print(task)
             mbti = MbtiChats()
             mbti.run(task)
-            result[i] = [i+start, mbti_real,
-                         mbti.chat_result['final_mbti'], mbti.chat_result]
+            result.append(
+                [i+start, mbti_real, mbti.chat_result['final_mbti'], mbti.chat_result])
             debug(result, f"{dataset}_{start}_{end}")
         count = np.zeros(4)
         for _, mbti_real, mbti_predict, _ in result:
