@@ -35,7 +35,9 @@ def data_process(task: str, deepclean=True, cutoff=3500):
                 break
         return "\n".join(process)
     # bert筛选
+    input_count = 0
     for message in sentences:
+        input_count += len(message)
         system_prompt = "Please read the following content and determine if it involves any MBTI personality traits and any character characteristics,just respond with a simple 'Yes' or 'No'"
         response = openai_response(system_prompt, message)
         response = response.split('None')[0]
@@ -49,7 +51,7 @@ def data_process(task: str, deepclean=True, cutoff=3500):
         if is_mbti:
             process.append(message)
             count += len(message)
-        if count > cutoff:
+        if count > cutoff or input_count > cutoff*2:
             break
     txt = "\n".join(process)
     return txt
