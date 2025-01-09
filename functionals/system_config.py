@@ -26,6 +26,7 @@ class ModelConfig:
         return self.configs['LIWC']['cats_id']
 
     def mbti_data(self, dataset):
+        assert dataset in ['kaggle', 'pand'], 'dataset must be kaggle or pand'
         data_path = self.mbti[dataset]
         if dataset == 'kaggle':
             data_path = os.path.join(self.file_path, data_path)

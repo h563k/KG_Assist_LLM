@@ -199,7 +199,7 @@ Use the following format for your response:
         expert_votes = ['Semantic', 'Sentiment', 'Linguistic']
         for expert in expert_votes:
             txt = f"The following are speculations from {expert} experts, just for reference, you can stick to your own opinion:\n "
-            if expert in circle_chats:
+            if txt in circle_chats:
                 voter = expert
                 break
         circle_chats = circle_chats.replace(txt, '').strip()
@@ -209,6 +209,7 @@ Use the following format for your response:
         temp = []
         start = ['1', '2', '3', '4']
         for circle_chat in circle_chats:
+            circle_chat = circle_chat.strip()
             circle_chat = circle_chat.replace('*', '')
             come_on = False
             for key in start:
