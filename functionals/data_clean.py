@@ -1,3 +1,5 @@
+import os
+import json
 import re
 from functionals.llm_api import openai_response
 
@@ -14,7 +16,7 @@ def data_process(task: str, cutoff=3500):
             message = message.replace(web, '')
         temp.append(message) if message else None
     txt = "\n".join(temp)
-    deepclean_cutoff = cutoff*10
+    deepclean_cutoff = cutoff * 5
     # TODO目前单纯通过文本去判断属于一个简易的判断, 这个不能作为一个非常合理的解释, 后期看看能不能给出更科学的判断依据. 比如存在大量无效文本的时候开启过滤
     if len(txt) > deepclean_cutoff:
         deepclean = True
@@ -41,17 +43,29 @@ def data_process(task: str, cutoff=3500):
                 break
         return "\n".join(process)
     # bert筛选
+    deep_clean_dict_path = '/opt/project/KG_Assist_LLM/data/samples/deep_clean.json'
+    if os.path.exists(deep_clean_dict_path):
+        with open(deep_clean_dict_path, 'r') as f:
+            deep_clean_dict = json.load(f)
+    else:
+        deep_clean_dict = {}
+
     input_count = 0
     for message in sentences:
         input_count += len(message)
         system_prompt = "Please read the following content and determine if it involves any MBTI personality traits and any character characteristics,just respond with a simple 'Yes' or 'No'"
-        response = openai_response(system_prompt, message)
-        response = response.split('None')[0]
+        if deep_clean_dict.get(message):
+            response = deep_clean_dict[message]
+        else:
+            response = openai_response(system_prompt, message)
+            response = response.split('None')[0]
         print({"message": message, "response": response})
         if "YES" in response.upper():
             is_mbti = 1
+            deep_clean_dict[message] = response
         elif "NO" in response.upper():
             is_mbti = 0
+            deep_clean_dict[message] = response
         else:
             is_mbti = 0
         if is_mbti:
@@ -59,5 +73,10 @@ def data_process(task: str, cutoff=3500):
             count += len(message)
         if count > cutoff or input_count > deepclean_cutoff:
             break
+
+    # 一次性将更新后的字典写入文件
+    with open(deep_clean_dict_path, 'w') as f:
+        json.dump(deep_clean_dict, f, indent=4)
+
     txt = "\n".join(process)
     return txt
