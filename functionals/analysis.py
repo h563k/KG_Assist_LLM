@@ -53,8 +53,8 @@ def mbti_analysis(start, end, dataset='kaggle'):
         return [f"{x*100:.4f}%" for x in count], stats.hmean(count), len(result), result
     except Exception as e:
         print(e)
-        start += 1
-        mbti_analysis(start, end, dataset)
+        # start += 1
+        # mbti_analysis(start, end, dataset)
 
 
 if __name__ == "__main__":

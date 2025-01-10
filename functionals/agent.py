@@ -329,7 +329,7 @@ In the MBTI dimension of type ({vote1}) vs. type ({vote2}):"""
     @log_to_file
     def run(self, task):
         print('step1')
-        task = data_process(task, deepclean=self.deepclean, cutoff=self.cutoff)
+        task = data_process(task, cutoff=self.cutoff)
         self.chat_result['origin_task'] = task
         print('step2')
         first_chats = self.first_chats(task)
