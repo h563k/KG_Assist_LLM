@@ -59,9 +59,11 @@ class MbtiChats:
                 "api_type": "openai",
                 "base_url": openai_config['base_url'],
                 "api_key": openai_config['api_key'],
+
             }
         ]
-        llm_config = {"config_list": config_list, }
+        llm_config = {"config_list": config_list,
+                      "cache_seed": None}
         return llm_config
 
     @staticmethod
