@@ -63,7 +63,7 @@ class MbtiChats:
             }
         ]
         llm_config = {"config_list": config_list,
-                      "cache_seed": openai_config['cache_seed']}
+                      "cache_seed": None}
         return llm_config
 
     @staticmethod
