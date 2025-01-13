@@ -60,7 +60,7 @@ def llama_factory_api(prompt):
 
 def bert_api(input_text: str):
     # 加载模型和分词器
-    model_path = "/opt/project/KG_Assist_LLM/data/bert_train/model"
+    model_path = f"{config.file_path}/data/bert_train/model"
     model = AutoModelForSequenceClassification.from_pretrained(model_path)
     tokenizer = AutoTokenizer.from_pretrained(model_path)
 

@@ -1,22 +1,25 @@
 import os
 import json
+import time
 import numpy as np
 from scipy import stats
 from functionals.agent import MbtiChats
 from functionals.system_config import ModelConfig
 from functionals.standard_log import log_to_file, debug
 
+config = ModelConfig()
+
 
 def get_start():
     _, _, file_name = os.walk(
-        '/opt/project/KG_Assist_LLM/logs/debug').__next__()
+        f'{config.file_path}/logs/debug').__next__()
     if file_name:
         file_name = [name.split('_') for name in file_name]
         file_name.sort(key=lambda x: x[1])
         file_name = file_name[-1]
         start = int(file_name[1])
         file_name = "_".join(file_name)
-        with open(f"/opt/project/KG_Assist_LLM/logs/debug/{file_name}", 'r') as f:
+        with open(f"{config.file_path}/logs/debug/{file_name}", 'r') as f:
             data = json.load(f)
         for num in data:
             start = max(start, (num[0]))
@@ -29,7 +32,7 @@ def get_start():
 @log_to_file
 def mbti_analysis(start, end, dataset='kaggle'):
     result = []
-    config = ModelConfig()
+
     data = config.mbti_data(dataset)
     try:
         start = max(get_start(), start)
@@ -53,8 +56,9 @@ def mbti_analysis(start, end, dataset='kaggle'):
         return [f"{x*100:.4f}%" for x in count], stats.hmean(count), len(result), result
     except Exception as e:
         print(e)
-        # start += 1
-        # mbti_analysis(start, end, dataset)
+        time.sleep(10)
+        start += 1
+        mbti_analysis(start, end, dataset)
 
 
 if __name__ == "__main__":

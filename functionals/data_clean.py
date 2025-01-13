@@ -2,6 +2,7 @@ import os
 import json
 import re
 from functionals.llm_api import openai_response
+from functionals.system_config import ModelConfig
 
 
 def data_process(task: str, cutoff=3500):
@@ -43,7 +44,8 @@ def data_process(task: str, cutoff=3500):
                 break
         return "\n".join(process)
     # bert筛选
-    deep_clean_dict_path = '/opt/project/KG_Assist_LLM/data/samples/deep_clean.json'
+    config = ModelConfig()
+    deep_clean_dict_path = f'{config.file_path}/data/samples/deep_clean.json'
     if os.path.exists(deep_clean_dict_path):
         with open(deep_clean_dict_path, 'r') as f:
             deep_clean_dict = json.load(f)

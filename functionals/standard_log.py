@@ -3,7 +3,7 @@ import json
 import logging
 import functools
 from datetime import datetime
-
+from functionals.system_config import ModelConfig
 
 
 
@@ -40,8 +40,9 @@ def log_to_file(func):
 
 
 def debug(json_data, json_name):
+    config = ModelConfig()
     now = datetime.now().strftime("%Y%m%d")
-    with open(f"/opt/project/KG_Assist_LLM/logs/debug/{json_name}_{now}.josn", "w") as f:
+    with open(f"{config.file_path}/logs/debug/{json_name}_{now}.josn", "w") as f:
         json.dump(json_data, f, indent=4)
 
 
