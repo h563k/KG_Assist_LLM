@@ -91,7 +91,7 @@ class MbtiChats:
         agent = ConversableAgent(
             name=user_name,
             llm_config=self.llm_config,
-            system_message=f"""Your task is to analyze the given AUTHOR'S TEXT and determine the MBTI personality type of the user based on four binary dimensions: 
+            system_message=f"""You are an {user_name} expert. Your task is to analyze the given AUTHOR'S TEXT and determine the MBTI personality type of the user based on four binary dimensions: 
 1. **Extraversion (E) vs. Introversion (I)** 
 2. **Sensing (S) vs. Intuition (N)** 
 3. **Thinking (T) vs. Feeling (F)** 
