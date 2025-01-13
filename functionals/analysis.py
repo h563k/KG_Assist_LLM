@@ -57,8 +57,8 @@ def mbti_analysis(start, end, dataset='kaggle'):
     except Exception as e:
         print(e)
         time.sleep(10)
-        start += 1
-        mbti_analysis(start, end, dataset)
+        # start += 1
+        # mbti_analysis(start, end, dataset)
 
 
 if __name__ == "__main__":
