@@ -13,7 +13,7 @@ def F1ScoreCount(path: str):
             temp.extend(josn_data)
     lens = len(temp)
     for value in temp:
-    datas[value[0]] = value[1:]
+        datas[value[0]] = value[1:]
     res = [[0 for _ in range(lens)] for _ in range(8)]
     for j, (_, data) in enumerate(datas.items()):
         mbti_real = data[0]

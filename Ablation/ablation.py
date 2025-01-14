@@ -19,23 +19,8 @@ def get_mbti_predict(circle_chats: str):
         if mbti_predict:
             temp += mbti_predict[-1]
     if len(temp) != 4:
-        print(circle_chats)
         return
     return temp
-
-
-def get_first_chat(datas: list):
-    full_1 = [[], [], [], []]
-    for data in datas:
-        real = data[1]
-        data = data[-1]
-        first_chats = data['first_chats']
-        for i in range(3):
-            llm_response = first_chats[i]['content']
-            llm_response = get_mbti_predict(llm_response)
-            full_1[i].append(list(llm_response))
-        full_1[3].append(list(real))
-    print(full_1)
 
 
 """
@@ -46,6 +31,8 @@ def get_first_chat(datas: list):
     mbti_predict
     [['I', 'N', 'T', 'J'], ['I', 'N', 'T', 'J'], ['I', 'S', 'F', 'P']]
 """
+
+
 def avgmaf1(mbti_real, mbti_predict):
     lens = len(mbti_real)
     res = [[0 for _ in range(lens)] for _ in range(8)]
@@ -65,9 +52,12 @@ def avgmaf1(mbti_real, mbti_predict):
     print(temp, score/4)
     return score
 
+
 """
 投票系统
 """
+
+
 def vote(datas: list):
     mbti_vote = {
         'E': 0,
