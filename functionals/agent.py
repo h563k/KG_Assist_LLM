@@ -34,9 +34,9 @@ class MbtiChats:
         self.chat_result = {}
         self.agent_dict = {
             "user_proxy": self.user_proxy(),
-            "Semantic": self.create_agent("Semantic"),
-            "Sentiment": self.create_agent("Sentiment"),
-            "Linguistic": self.create_agent("Linguistic"),
+            "Semantic": self.create_agent("MBTI"),
+            "Sentiment": self.create_agent("MBTI"),
+            "Linguistic": self.create_agent("MBTI"),
             "Commentator": self.commentator()
         }
         self.deepclean = deepclean

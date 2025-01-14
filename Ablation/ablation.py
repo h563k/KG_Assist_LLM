@@ -37,11 +37,14 @@ def get_first_chat(datas: list):
         full_1[3].append(list(real))
     print(full_1)
 
+
 """
-mbti_real
-[['I', 'N', 'T', 'J'], ['I', 'S', 'T', 'P'], ['I', 'N', 'T', 'P']]
-mbti_predict
-[['I', 'N', 'T', 'J'], ['I', 'N', 'T', 'J'], ['I', 'S', 'F', 'P']]
+计算4个指标的macro_f1，并求平均
+输入格式:
+    mbti_real
+    [['I', 'N', 'T', 'J'], ['I', 'S', 'T', 'P'], ['I', 'N', 'T', 'P']]
+    mbti_predict
+    [['I', 'N', 'T', 'J'], ['I', 'N', 'T', 'J'], ['I', 'S', 'F', 'P']]
 """
 def avgmaf1(mbti_real, mbti_predict):
     lens = len(mbti_real)
@@ -61,3 +64,28 @@ def avgmaf1(mbti_real, mbti_predict):
         temp.append(macro_f1)
     print(temp, score/4)
     return score
+
+"""
+投票系统
+"""
+def vote(datas: list):
+    mbti_vote = {
+        'E': 0,
+        'I': 0,
+        'N': 0,
+        'S': 0,
+        'T': 0,
+        'F': 0,
+        'J': 0,
+        'P': 0
+    }
+    mbti_predict_vote = []
+    mbti_types = [['E', 'I'], ['N', 'S'], ['T', 'F'], ['J', 'P']]
+    for data in datas:
+        mbti_predict_pre = data
+        for k in range(4):
+            mbti_vote[mbti_predict_pre[k]] += 1
+    for mbti_type in mbti_types:
+        mbti_predict_vote.append(
+            mbti_type[0] if mbti_vote[mbti_type[0]] > mbti_vote[mbti_type[1]] else mbti_type[1])
+    return mbti_predict_vote
