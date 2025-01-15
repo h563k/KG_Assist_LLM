@@ -386,7 +386,9 @@ In the MBTI dimension of type ({vote1}) vs. type ({vote2}):"""
         self.chat_result['origin_task'] = task
         first_chats = self.first_chats(task)
         self.circle_chat(task, first_chats, 1, self.max_round)
-        task = f"""AUTHOR'S TEXT: {task}\n\n### Experts' solutions\n\n{self.chat_result['round_3']}"""
+        ExpertsSolutions = self.chat_result['round_3']
+        ExpertsSolutions = "\n\n".join(ExpertsSolutions)
+        task = f"""AUTHOR'S TEXT: {task}\n\n### Experts' solutions\n\n{ExpertsSolutions}"""
         chats = initiate_chats([
             self.chat_unit(
                 self.agent_dict['user_proxy'], self.agent_dict['Single'], task),
