@@ -63,7 +63,7 @@ class MbtiChats:
             }
         ]
         llm_config = {"config_list": config_list,
-                      "cache_seed": None if openai_config['cache_seed'] < 0 else openai_config['cache_seed']}
+                      "cache_seed": 42}
         return llm_config
 
     @staticmethod
