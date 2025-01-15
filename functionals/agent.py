@@ -17,9 +17,9 @@ mbti = config.mbti
 class MbtiChats:
     def __init__(self, max_round=mbti['max_round'], openai_type=mbti['openai_type'], model=mbti['model'], deepclean=mbti['deepclean'], cutoff=mbti['cutoff']) -> None:
         """
-        :param max_round: Number of rounds for free discussion among three agents. 
+        :param max_round: Number of rounds for free discussion among three agents.
         专家讨论的轮数
-        :param nums: The maximum number of MBTI personality types each agent is allowed to predict, suggested using words rather than Arabic numerals d. 
+        :param nums: The maximum number of MBTI personality types each agent is allowed to predict, suggested using words rather than Arabic numerals d.
         专家每轮预测的性格数量上限
         :param openai_type: The type of OpenAI API to use, hk or origin.
         代理切换
@@ -34,10 +34,11 @@ class MbtiChats:
         self.chat_result = {}
         self.agent_dict = {
             "user_proxy": self.user_proxy(),
-            "Semantic": self.create_agent("MBTI"),
-            "Sentiment": self.create_agent("MBTI"),
-            "Linguistic": self.create_agent("MBTI"),
-            "Commentator": self.commentator()
+            "Semantic": self.create_agent("Semantic"),
+            "Sentiment": self.create_agent("Sentiment"),
+            "Linguistic": self.create_agent("Linguistic"),
+            "Commentator": self.commentator(),
+            "Single": self.create_agent('personality analysis')
         }
         self.deepclean = deepclean
         self.cutoff = cutoff
@@ -62,8 +63,9 @@ class MbtiChats:
 
             }
         ]
+        cache_seed = config.OpenAI['cache_seed']
         llm_config = {"config_list": config_list,
-                      "cache_seed": None
+                      "cache_seed": None if not cache_seed else cache_seed,
                       }
         return llm_config
 
@@ -92,30 +94,30 @@ class MbtiChats:
         agent = ConversableAgent(
             name=user_name,
             llm_config=self.llm_config,
-            system_message=f"""You are an {user_name} expert. Your task is to analyze the given AUTHOR'S TEXT and determine the MBTI personality type of the user based on four binary dimensions: 
-1. **Extraversion (E) vs. Introversion (I)** 
-2. **Sensing (S) vs. Intuition (N)** 
-3. **Thinking (T) vs. Feeling (F)** 
-4. **Judging (J) vs. Perceiving (P)** 
-For each dimension, provide: 
-- **Classification**: Your decision (e.g., "E" or "I"). 
-- **Reason**: A brief explanation of why you made this classification. 
-- **Confidence level**: A value between 0.0 and 1.0 that reflects how certain you are about the classification. 
-Use the following format for your response: 
+            system_message=f"""You are an {user_name} expert. Your task is to analyze the given AUTHOR'S TEXT and determine the MBTI personality type of the user based on four binary dimensions:
+1. **Extraversion (E) vs. Introversion (I)**
+2. **Sensing (S) vs. Intuition (N)**
+3. **Thinking (T) vs. Feeling (F)**
+4. **Judging (J) vs. Perceiving (P)**
+For each dimension, provide:
+- **Classification**: Your decision (e.g., "E" or "I").
+- **Reason**: A brief explanation of why you made this classification.
+- **Confidence level**: A value between 0.0 and 1.0 that reflects how certain you are about the classification.
+Use the following format for your response:
 ```
-1. Extraversion (E) vs. Introversion (I): [Your decision, e.g., "E"] 
-Reason: [Explain the reasoning behind your choice, e.g., "The user frequently discusses external social activities and expresses energy from interactions with others."] 
-Confidence level: [Your confidence score, e.g., "0.8"] 
-2. Sensing (S) vs. Intuition (N): [Your decision, e.g., "N"] 
-Reason: [Explain the reasoning behind your choice, e.g., "The user focuses on abstract ideas and future possibilities rather than concrete details."] 
-Confidence level: [Your confidence score, e.g., "0.7"] 
-3. Thinking (T) vs. Feeling (F): [Your decision, e.g., "T"] 
-Reason: [Explain the reasoning behind your choice, e.g., "The user emphasizes logical analysis and objectivity in decision-making."] 
-Confidence level: [Your confidence score, e.g., "0.9"] 
-4. Judging (J) vs. Perceiving (P): [Your decision, e.g., "P"] 
-Reason: [Explain the reasoning behind your choice, e.g., "The user prefers flexible approaches and is open to last-minute changes."] 
-Confidence level: [Your confidence score, e.g., "0.5"] 
-``` 
+1. Extraversion (E) vs. Introversion (I): [Your decision, e.g., "E"]
+Reason: [Explain the reasoning behind your choice, e.g., "The user frequently discusses external social activities and expresses energy from interactions with others."]
+Confidence level: [Your confidence score, e.g., "0.8"]
+2. Sensing (S) vs. Intuition (N): [Your decision, e.g., "N"]
+Reason: [Explain the reasoning behind your choice, e.g., "The user focuses on abstract ideas and future possibilities rather than concrete details."]
+Confidence level: [Your confidence score, e.g., "0.7"]
+3. Thinking (T) vs. Feeling (F): [Your decision, e.g., "T"]
+Reason: [Explain the reasoning behind your choice, e.g., "The user emphasizes logical analysis and objectivity in decision-making."]
+Confidence level: [Your confidence score, e.g., "0.9"]
+4. Judging (J) vs. Perceiving (P): [Your decision, e.g., "P"]
+Reason: [Explain the reasoning behind your choice, e.g., "The user prefers flexible approaches and is open to last-minute changes."]
+Confidence level: [Your confidence score, e.g., "0.5"]
+```
 Analyze the AUTHOR'S TEXT carefully, and provide a detailed and thoughtful response for each dimension.""",
             description=f"""{user_name} expert, skilled in analyzing user information from a {
                 user_name} angle to predict their MBTI personality type.""",
@@ -129,10 +131,10 @@ Analyze the AUTHOR'S TEXT carefully, and provide a detailed and thoughtful respo
             llm_config=self.llm_config,
             system_message="""You are an arbiter with expertise in the MBTI domain. Please read the given AUTHOR'S TEXT and carefully review the following solutions from Semantic, Sentiment, and Linguistic agents as additional information, determine the MBTI personality type .
 
-Use the following format for your response: 
+Use the following format for your response:
 ```
-1. **Classification**: type (e.g. "E") vs. type (e.g. "I"): [Your decision, e.g., "E"] 
-2. **Reason**: [Explain the reasoning behind your choice, e.g., "The user frequently discusses external social activities and expresses energy from interactions with others."] 
+1. **Classification**: type (e.g. "E") vs. type (e.g. "I"): [Your decision, e.g., "E"]
+2. **Reason**: [Explain the reasoning behind your choice, e.g., "The user frequently discusses external social activities and expresses energy from interactions with others."]
 3. **Confidence level**: [Your confidence score, e.g., "0.8"] """,
             description="""Review Expert, to conduct the final analysis and summary.""",
             human_input_mode="NEVER",
@@ -330,7 +332,7 @@ In the MBTI dimension of type ({vote1}) vs. type ({vote2}):"""
         self.chat_result['final_mbti'] = "".join(
             self.chat_result['final_mbti'])
 
-    # @retry(wait=wait_random_exponential(min=1, max=60), stop=stop_after_attempt(0))
+    @retry(wait=wait_random_exponential(min=1, max=60), stop=stop_after_attempt(0))
     @log_to_file
     def run(self, task):
         print('step1')
@@ -345,4 +347,58 @@ In the MBTI dimension of type ({vote1}) vs. type ({vote2}):"""
         print('step5')
         self.final_predict(task)
         print('step6')
+        return self.chat_result
+
+    # 消融4
+    @retry(wait=wait_random_exponential(min=1, max=60), stop=stop_after_attempt(0))
+    @log_to_file
+    def run_single(self, task):
+        task = data_process(task, cutoff=self.cutoff)
+        self.chat_result['origin_task'] = task
+        task = f"""AUTHOR'S TEXT: {task}"""
+        chat = initiate_chats([
+            self.chat_unit(
+                self.agent_dict['user_proxy'], self.agent_dict['Single'], task),
+        ])
+        circle_chats = chat[0].chat_history[1]['content']
+        print(circle_chats)
+        circle_chats = circle_chats.split("\n\n")
+        temp = []
+        start = ['1', '2', '3', '4']
+        for circle_chat in circle_chats:
+            circle_chat = circle_chat.strip()
+            circle_chat = circle_chat.replace('*', '')
+            come_on = False
+            for key in start:
+                if circle_chat.startswith(key):
+                    come_on = True
+            if not come_on:
+                continue
+            mbti_predict = self.get_mbti_predict(circle_chat)
+            temp.append(mbti_predict)
+        self.chat_result['final_mbti'] = "".join(temp)
+
+    # @retry(wait=wait_random_exponential(min=1, max=60), stop=stop_after_attempt(0))
+
+    @log_to_file
+    def run_without_vote(self, task):
+        print('step1')
+        task = data_process(task, cutoff=self.cutoff)
+        self.chat_result['origin_task'] = task
+        print('step2')
+        first_chats = self.first_chats(task)
+        print('step3')
+        self.circle_chat(task, first_chats, 1, self.max_round)
+        print('step5')
+        task = f"""AUTHOR'S TEXT: {task}\n\n### Experts' solutions\n\n{self.chat_result['round_3']}"""
+        chats = initiate_chats([
+            self.chat_unit(
+                self.agent_dict['user_proxy'], self.agent_dict['Single'], task),
+        ])
+        chats = chats[0].chat_history[1]['content']
+        chats = chats.split("\n\n")
+        final_mbti = []
+        for chat in chats:
+            final_mbti.append(self.get_mbti_predict(chat))
+        self.chat_result['final_mbti']="".join(final_mbti)
         return self.chat_result
