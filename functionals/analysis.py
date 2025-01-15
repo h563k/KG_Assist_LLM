@@ -39,7 +39,6 @@ def mbti_analysis(start, end, dataset='kaggle'):
         print(f"start: {start}")
         for i, (mbti_real, task) in enumerate(data.values[start:end]):
             print("origin_task")
-            print(task)
             mbti = MbtiChats()
             mbti.run(task)
             final_mbti = mbti.chat_result['final_mbti']

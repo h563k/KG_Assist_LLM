@@ -49,12 +49,13 @@ def avgmaf1(mbti_real, mbti_predict):
         macro_f1 = f1_score(res[i], res[i+4], average='macro')
         score += macro_f1
         temp.append(macro_f1)
-    print(temp, score/4)
-    return score
+    # print(temp, score/4)
+    return temp, score
 
 
 """
 投票系统
+[['I', 'N', 'T', 'J'], ['I', 'S', 'T', 'P'], ['I', 'N', 'T', 'P']]
 """
 
 
@@ -79,3 +80,6 @@ def vote(datas: list):
         mbti_predict_vote.append(
             mbti_type[0] if mbti_vote[mbti_type[0]] > mbti_vote[mbti_type[1]] else mbti_type[1])
     return mbti_predict_vote
+
+if __name__ == '__main__':
+    print(vote([['E', 'N', 'T', 'J'], ['I', 'S', 'T', 'P'], ['I', 'N', 'T', 'P']]))
