@@ -382,14 +382,10 @@ In the MBTI dimension of type ({vote1}) vs. type ({vote2}):"""
     @retry(wait=wait_random_exponential(min=1, max=60), stop=stop_after_attempt(0))
     @log_to_file
     def run_without_vote(self, task):
-        print('step1')
         task = data_process(task, cutoff=self.cutoff)
         self.chat_result['origin_task'] = task
-        print('step2')
         first_chats = self.first_chats(task)
-        print('step3')
         self.circle_chat(task, first_chats, 1, self.max_round)
-        print('step5')
         task = f"""AUTHOR'S TEXT: {task}\n\n### Experts' solutions\n\n{self.chat_result['round_3']}"""
         chats = initiate_chats([
             self.chat_unit(
