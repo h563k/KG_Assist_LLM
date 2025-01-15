@@ -62,8 +62,8 @@ class MbtiChats:
 
             }
         ]
-        llm_config = {"config_list": config_list
-                    #   "cache_seed": None
+        llm_config = {"config_list": config_list,
+                      "cache_seed": None
                       }
         return llm_config
 
@@ -75,7 +75,7 @@ class MbtiChats:
             "message": message,
             "summary_method": "reflection_with_llm",
             "max_turns": 1,
-            "clear_history": True
+            "clear_history": False
         }
 
     def user_proxy(self):
@@ -330,7 +330,7 @@ In the MBTI dimension of type ({vote1}) vs. type ({vote2}):"""
         self.chat_result['final_mbti'] = "".join(
             self.chat_result['final_mbti'])
 
-    @retry(wait=wait_random_exponential(min=1, max=60), stop=stop_after_attempt(0))
+    # @retry(wait=wait_random_exponential(min=1, max=60), stop=stop_after_attempt(0))
     @log_to_file
     def run(self, task):
         print('step1')
