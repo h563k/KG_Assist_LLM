@@ -378,8 +378,8 @@ In the MBTI dimension of type ({vote1}) vs. type ({vote2}):"""
             temp.append(mbti_predict)
         self.chat_result['final_mbti'] = "".join(temp)
 
-    # @retry(wait=wait_random_exponential(min=1, max=60), stop=stop_after_attempt(0))
-
+    # 消融6
+    @retry(wait=wait_random_exponential(min=1, max=60), stop=stop_after_attempt(0))
     @log_to_file
     def run_without_vote(self, task):
         print('step1')
