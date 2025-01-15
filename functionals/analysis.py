@@ -20,7 +20,7 @@ def get_start():
         with open(f"{config.file_path}/logs/debug/{file_name}", 'r') as f:
             data = json.load(f)
         start = max(start, data[-1][0])
-        start = start + 1
+    start = start + 1
     return start
 
 
