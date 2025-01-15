@@ -62,8 +62,8 @@ class MbtiChats:
 
             }
         ]
-        llm_config = {"config_list": config_list,
-                    #   "cache_seed": 42
+        llm_config = {"config_list": config_list
+                    #   "cache_seed": None
                       }
         return llm_config
 
@@ -200,6 +200,7 @@ Use the following format for your response:
     # 按照新的框架，在结束讨论后，我们应当进入一个投票环节， 交给法官角色做最后判断
     def check_vote(self, circle_chats: str):
         expert_votes = ['Semantic', 'Sentiment', 'Linguistic']
+        voter = None
         for expert in expert_votes:
             txt = f"The following are speculations from {expert} experts, just for reference, you can stick to your own opinion:\n "
             if txt in circle_chats:
@@ -229,7 +230,8 @@ Use the following format for your response:
             result = [mbti_predict, Confidence, Reason]
             temp.append(result)
         print('step4-3')
-        print(temp)
+        print('voter')
+        print(voter, temp)
         return voter, temp
 
     def vote(self):

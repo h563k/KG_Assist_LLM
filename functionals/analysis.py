@@ -11,22 +11,17 @@ config = ModelConfig()
 
 
 def get_start():
-    _, _, file_name = os.walk(
+    _, _, file_names = os.walk(
         f'{config.file_path}/logs/debug').__next__()
-    if file_name:
-        file_name = [name.split('_') for name in file_name]
-        file_name.sort(key=lambda x: x[1])
-        file_name = file_name[-1]
-        start = int(file_name[1])
-        file_name = "_".join(file_name)
+    if not file_names:
+        return 0
+    start = 0
+    for file_name in file_names:
         with open(f"{config.file_path}/logs/debug/{file_name}", 'r') as f:
             data = json.load(f)
-        for num in data:
-            start = max(start, (num[0]))
+        start = max(start, data[-1][0])
         start = start + 1
-        return start
-    else:
-        return 0
+    return start
 
 
 @log_to_file
