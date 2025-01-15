@@ -63,7 +63,8 @@ class MbtiChats:
             }
         ]
         llm_config = {"config_list": config_list,
-                      "cache_seed": 42}
+                    #   "cache_seed": 42
+                      }
         return llm_config
 
     @staticmethod
