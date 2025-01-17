@@ -209,12 +209,12 @@ Use the following format for your response:
 
     @staticmethod
     def get_mbti_predict(circle_chats: str):
-        circle_chats = circle_chats.split("\n")
-        mbti_predict = re.findall('E|I|S|N|T|F|J|P', circle_chats)
+        mbti_predict = re.findall(
+            r'Classification.*?(E|I|S|N|T|F|J|P)', circle_chats)
         if mbti_predict:
             print(circle_chats)
             print(mbti_predict)
-            return mbti_predict[-1]
+            return mbti_predict
 
     # 按照新的框架，在结束讨论后，我们应当进入一个投票环节， 交给法官角色做最后判断
     def check_vote(self, circle_chats: str):
@@ -228,9 +228,7 @@ Use the following format for your response:
         circle_chats = circle_chats.replace(txt, '').strip()
         print('step4-2')
         print(circle_chats)
-        # circle_chats = circle_chats.split("\n\n")
-        mbti_predict = re.findall(
-            r'Classification.*?(E|I|S|N|T|F|J|P)', circle_chats)
+        mbti_predict = self.get_mbti_predict(circle_chats)
         Confidence = re.findall(
             r'\n.*?Confidence.*?(\d+\.\d+)', circle_chats, re.I)
         Confidence = [float(i) for i in Confidence]
@@ -329,11 +327,10 @@ In the MBTI dimension of type ({vote1}) vs. type ({vote2}):"""
                 time.sleep(15)
             agent_result = final_predict[0].chat_history[1]['content']
             self.chat_result[f'battle_{vote1}{vote2}'] = agent_result
-            predict = re.findall(
-                r'Classification.*?(E|I|S|N|T|F|J|P)', agent_result)
+            predict = self.get_mbti_predict(agent_result)
             print('step5-2')
             print(predict)
-            self.chat_result['final_mbti'].append(predict[0])
+            self.chat_result['final_mbti'].append("".join(predict))
 
     def final_predict(self, task):
         self.chat_result['final_mbti'] = []
@@ -346,13 +343,13 @@ In the MBTI dimension of type ({vote1}) vs. type ({vote2}):"""
     # @retry(wait=wait_random_exponential(min=1, max=60), stop=stop_after_attempt(0))
     @log_to_file
     def run(self, task):
+        if self.openai_type == "ollama":
+            return self.run_single(task)
         print('step1')
         task = data_process(task, cutoff=self.cutoff)
         self.chat_result['origin_task'] = task
         print('step2')
         first_chats = self.first_chats(task)
-        if self.openai_type == "ollama":
-            return self.run_ollama(task)
         print('step3')
         self.circle_chat(task, first_chats, 1, self.max_round)
         print('step4')
@@ -374,21 +371,7 @@ In the MBTI dimension of type ({vote1}) vs. type ({vote2}):"""
                 self.agent_dict['user_proxy'], self.agent_dict['Single'], task),
         ])
         circle_chats = chat[0].chat_history[1]['content']
-        print(circle_chats)
-        circle_chats = circle_chats.split("\n\n")
-        temp = []
-        start = ['1', '2', '3', '4']
-        for circle_chat in circle_chats:
-            circle_chat = circle_chat.strip()
-            circle_chat = circle_chat.replace('*', '')
-            come_on = False
-            for key in start:
-                if circle_chat.startswith(key):
-                    come_on = True
-            if not come_on:
-                continue
-            mbti_predict = self.get_mbti_predict(circle_chat)
-            temp.append(mbti_predict)
+        temp = self.get_mbti_predict(circle_chats)
         self.chat_result['final_mbti'] = "".join(temp)
 
     # 消融6
@@ -408,30 +391,6 @@ In the MBTI dimension of type ({vote1}) vs. type ({vote2}):"""
         ])
         chats = chats[0].chat_history[1]['content']
         chats = chats.split("\n\n")
-        final_mbti = []
-        for chat in chats:
-            final_mbti.append(self.get_mbti_predict(chat))
+        final_mbti = self.get_mbti_predict(chats)
         self.chat_result['final_mbti'] = "".join(final_mbti)
         return self.chat_result
-
-    # ollama 专用
-    @log_to_file
-    def run_ollama(self, task):
-        self.first_chats(task)
-        first_chats = self.chat_result['first_chats']
-        chat_prompts = []
-        for chat in first_chats:
-            message = f"""The following are speculations from {chat['name']} experts, just for reference, you can stick to your own opinion:
-        {chat['content']}"""
-            chat_prompts.append(message)
-        combined_prompt = "\n".join(chat_prompts)
-        next_chats = initiate_chats([
-            self.chat_unit(self.agent_dict['user_proxy'], self.agent_dict['Single'],
-                           f"""{task}\n\n{combined_prompt}""")
-        ])
-        chat_message = next_chats[0].chat_history[1]['content']
-        print('chat_message')
-        print(chat_message)
-        final_mbti = re.findall(
-            r'Classification.*?(E|I|S|N|T|F|J|P)', chat_message)
-        self.chat_result['final_mbti'] = "".join(final_mbti)
