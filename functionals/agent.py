@@ -151,6 +151,7 @@ Use the following format for your response:
         return Commentator
 
     def first_chats(self, task):
+        temp = []
         task = f"""AUTHOR'S TEXT: {task}"""
         for first_chat in [self.agent_dict['Semantic'], self.agent_dict['Sentiment'], self.agent_dict['Linguistic']]:
             first_chats_list = [
@@ -160,10 +161,9 @@ Use the following format for your response:
                 ])
             ]
             if self.openai_type == "ollama":
-                time.sleep(10)
-        temp = []
-        for chat in first_chats_list:
-            temp.append(chat[0].chat_history[1])
+                time.sleep(15)
+            for chat in first_chats_list:
+                temp.append(chat[0].chat_history[1])
         self.chat_result['first_chats'] = temp
 
         return first_chats_list
@@ -204,7 +204,7 @@ Use the following format for your response:
                 ])
             ]
             if self.openai_type == "ollama":
-                time.sleep(10)
+                time.sleep(15)
         return self.circle_chat(task, next_chats, nums + 1, max_depth)
 
     @staticmethod
@@ -326,7 +326,7 @@ In the MBTI dimension of type ({vote1}) vs. type ({vote2}):"""
                     self.agent_dict['user_proxy'], self.agent_dict['Commentator'], battle_content)
             ])
             if self.openai_type == "ollama":
-                time.sleep(10)
+                time.sleep(15)
             agent_result = final_predict[0].chat_history[1]['content']
             self.chat_result[f'battle_{vote1}{vote2}'] = agent_result
             predict = re.findall(
@@ -351,6 +351,8 @@ In the MBTI dimension of type ({vote1}) vs. type ({vote2}):"""
         self.chat_result['origin_task'] = task
         print('step2')
         first_chats = self.first_chats(task)
+        if self.openai_type == "ollama":
+            return self.run_ollama(task)
         print('step3')
         self.circle_chat(task, first_chats, 1, self.max_round)
         print('step4')
@@ -411,3 +413,25 @@ In the MBTI dimension of type ({vote1}) vs. type ({vote2}):"""
             final_mbti.append(self.get_mbti_predict(chat))
         self.chat_result['final_mbti'] = "".join(final_mbti)
         return self.chat_result
+
+    # ollama 专用
+    @log_to_file
+    def run_ollama(self, task):
+        self.first_chats(task)
+        first_chats = self.chat_result['first_chats']
+        chat_prompts = []
+        for chat in first_chats:
+            message = f"""The following are speculations from {chat['name']} experts, just for reference, you can stick to your own opinion:
+        {chat['content']}"""
+            chat_prompts.append(message)
+        combined_prompt = "\n".join(chat_prompts)
+        next_chats = initiate_chats([
+            self.chat_unit(self.agent_dict['user_proxy'], self.agent_dict['Single'],
+                           f"""{task}\n\n{combined_prompt}""")
+        ])
+        chat_message = next_chats[0].chat_history[1]['content']
+        print('chat_message')
+        print(chat_message)
+        final_mbti = re.findall(
+            r'Classification.*?(E|I|S|N|T|F|J|P)', chat_message)
+        self.chat_result['final_mbti'] = "".join(final_mbti)
