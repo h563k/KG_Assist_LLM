@@ -152,18 +152,20 @@ Use the following format for your response:
 
     def first_chats(self, task):
         task = f"""AUTHOR'S TEXT: {task}"""
-        first_chats_list = [
-            initiate_chats([
-                self.chat_unit(
-                    self.agent_dict['user_proxy'], first_chat, task),
-            ]) for first_chat in [self.agent_dict['Semantic'], self.agent_dict['Sentiment'], self.agent_dict['Linguistic']]
-        ]
+        for first_chat in [self.agent_dict['Semantic'], self.agent_dict['Sentiment'], self.agent_dict['Linguistic']]:
+            first_chats_list = [
+                initiate_chats([
+                    self.chat_unit(
+                        self.agent_dict['user_proxy'], first_chat, task),
+                ])
+            ]
+            if self.openai_type == "ollama":
+                time.sleep(10)
         temp = []
         for chat in first_chats_list:
             temp.append(chat[0].chat_history[1])
         self.chat_result['first_chats'] = temp
-        if self.openai_type == "ollama":
-            time.sleep(10)
+
         return first_chats_list
 
     @staticmethod
@@ -194,14 +196,15 @@ Use the following format for your response:
         combined_prompt = "\n".join(chat_prompts)
 
         # 初始化下一轮的聊天
-        next_chats = [
-            initiate_chats([
-                self.chat_unit(self.agent_dict['user_proxy'], agent,
-                               f"""{task}\n\n{combined_prompt}""")
-            ]) for agent in [self.agent_dict['Semantic'], self.agent_dict['Sentiment'], self.agent_dict['Linguistic']]
-        ]
-        if self.openai_type == "ollama":
-            time.sleep(10)
+        for agent in [self.agent_dict['Semantic'], self.agent_dict['Sentiment'], self.agent_dict['Linguistic']]:
+            next_chats = [
+                initiate_chats([
+                    self.chat_unit(self.agent_dict['user_proxy'], agent,
+                                   f"""{task}\n\n{combined_prompt}""")
+                ])
+            ]
+            if self.openai_type == "ollama":
+                time.sleep(10)
         return self.circle_chat(task, next_chats, nums + 1, max_depth)
 
     @staticmethod
