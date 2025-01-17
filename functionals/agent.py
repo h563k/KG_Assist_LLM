@@ -1,5 +1,6 @@
 import os
 import re
+import time
 from autogen import initiate_chats, ConversableAgent
 from functionals.system_config import ModelConfig
 from functionals.standard_log import log_to_file, debug
@@ -26,9 +27,8 @@ class MbtiChats:
         :param model: openai model type, gpt-3.5-turbo or gpt-4
         模型选择
         """
-        assert model in ['gpt-3.5-turbo',
-                         'gpt-4'], "Please select the correct model type."
         self.model = model
+        self.openai_type = openai_type
         self.llm_config = self.env_init(openai_type)
         self.max_round = max_round
         self.chat_result = {}
@@ -63,6 +63,8 @@ class MbtiChats:
 
             }
         ]
+        if openai_type == 'ollama':
+            config_list[0]['price'] = [0, 0]
         cache_seed = config.OpenAI['cache_seed']
         llm_config = {"config_list": config_list,
                       "cache_seed": None if not cache_seed else cache_seed,
@@ -105,16 +107,23 @@ For each dimension, provide:
 - **Confidence level**: A value between 0.0 and 1.0 that reflects how certain you are about the classification.
 Use the following format for your response:
 ```
-1. Extraversion (E) vs. Introversion (I): [Your decision, e.g., "E"]
+1. Extraversion (E) vs. Introversion (I):
+Classification: [Your decision, e.g., "E"]
 Reason: [Explain the reasoning behind your choice, e.g., "The user frequently discusses external social activities and expresses energy from interactions with others."]
 Confidence level: [Your confidence score, e.g., "0.8"]
-2. Sensing (S) vs. Intuition (N): [Your decision, e.g., "N"]
+
+2. Sensing (S) vs. Intuition (N):
+Classification: [Your decision, e.g., "N"]
 Reason: [Explain the reasoning behind your choice, e.g., "The user focuses on abstract ideas and future possibilities rather than concrete details."]
 Confidence level: [Your confidence score, e.g., "0.7"]
-3. Thinking (T) vs. Feeling (F): [Your decision, e.g., "T"]
+
+3. Thinking (T) vs. Feeling (F):
+Classification: [Your decision, e.g., "T"]
 Reason: [Explain the reasoning behind your choice, e.g., "The user emphasizes logical analysis and objectivity in decision-making."]
 Confidence level: [Your confidence score, e.g., "0.9"]
-4. Judging (J) vs. Perceiving (P): [Your decision, e.g., "P"]
+
+4. Judging (J) vs. Perceiving (P): 
+Classification: [Your decision, e.g., "P"]
 Reason: [Explain the reasoning behind your choice, e.g., "The user prefers flexible approaches and is open to last-minute changes."]
 Confidence level: [Your confidence score, e.g., "0.5"]
 ```
@@ -153,6 +162,8 @@ Use the following format for your response:
         for chat in first_chats_list:
             temp.append(chat[0].chat_history[1])
         self.chat_result['first_chats'] = temp
+        if self.openai_type == "ollama":
+            time.sleep(10)
         return first_chats_list
 
     @staticmethod
@@ -189,14 +200,17 @@ Use the following format for your response:
                                f"""{task}\n\n{combined_prompt}""")
             ]) for agent in [self.agent_dict['Semantic'], self.agent_dict['Sentiment'], self.agent_dict['Linguistic']]
         ]
-
+        if self.openai_type == "ollama":
+            time.sleep(10)
         return self.circle_chat(task, next_chats, nums + 1, max_depth)
 
     @staticmethod
     def get_mbti_predict(circle_chats: str):
-        circle_chats = circle_chats.split("\n")[0]
+        circle_chats = circle_chats.split("\n")
         mbti_predict = re.findall('E|I|S|N|T|F|J|P', circle_chats)
         if mbti_predict:
+            print(circle_chats)
+            print(mbti_predict)
             return mbti_predict[-1]
 
     # 按照新的框架，在结束讨论后，我们应当进入一个投票环节， 交给法官角色做最后判断
@@ -211,25 +225,17 @@ Use the following format for your response:
         circle_chats = circle_chats.replace(txt, '').strip()
         print('step4-2')
         print(circle_chats)
-        circle_chats = circle_chats.split("\n\n")
+        # circle_chats = circle_chats.split("\n\n")
+        mbti_predict = re.findall(
+            r'Classification.*?(E|I|S|N|T|F|J|P)', circle_chats)
+        Confidence = re.findall(
+            r'\n.*?Confidence.*?(\d+\.\d+)', circle_chats, re.I)
+        Confidence = [float(i) for i in Confidence]
+        Reason = re.findall(r"Reason(.*)\n",
+                            circle_chats, re.I)
         temp = []
-        start = ['1', '2', '3', '4']
-        for circle_chat in circle_chats:
-            circle_chat = circle_chat.strip()
-            circle_chat = circle_chat.replace('*', '')
-            come_on = False
-            for key in start:
-                if circle_chat.startswith(key):
-                    come_on = True
-            if not come_on:
-                continue
-            mbti_predict = self.get_mbti_predict(circle_chat)
-            Confidence = re.findall(
-                r'\n.*?Confidence.*?(\d+\.\d+)', circle_chat, re.I)[0]
-            Confidence = float(Confidence)
-            Reason = re.findall(r"Reason(.*)\n",
-                                circle_chat, re.I)[0].strip()
-            result = [mbti_predict, Confidence, Reason]
+        for i in range(4):
+            result = [mbti_predict[i], Confidence[i], Reason[i]]
             temp.append(result)
         print('step4-3')
         print('voter')
@@ -316,10 +322,12 @@ In the MBTI dimension of type ({vote1}) vs. type ({vote2}):"""
                 self.chat_unit(
                     self.agent_dict['user_proxy'], self.agent_dict['Commentator'], battle_content)
             ])
+            if self.openai_type == "ollama":
+                time.sleep(10)
             agent_result = final_predict[0].chat_history[1]['content']
             self.chat_result[f'battle_{vote1}{vote2}'] = agent_result
-            predict = agent_result.split('\n')[0]
-            predict = self.get_mbti_predict(predict)
+            predict = re.findall(
+                r'Classification.*?(E|I|S|N|T|F|J|P)', agent_result)
             print('step5-2')
             print(predict)
             self.chat_result['final_mbti'].append(predict[0])
@@ -332,7 +340,7 @@ In the MBTI dimension of type ({vote1}) vs. type ({vote2}):"""
         self.chat_result['final_mbti'] = "".join(
             self.chat_result['final_mbti'])
 
-    @retry(wait=wait_random_exponential(min=1, max=60), stop=stop_after_attempt(0))
+    # @retry(wait=wait_random_exponential(min=1, max=60), stop=stop_after_attempt(0))
     @log_to_file
     def run(self, task):
         print('step1')
@@ -398,5 +406,5 @@ In the MBTI dimension of type ({vote1}) vs. type ({vote2}):"""
         final_mbti = []
         for chat in chats:
             final_mbti.append(self.get_mbti_predict(chat))
-        self.chat_result['final_mbti']="".join(final_mbti)
+        self.chat_result['final_mbti'] = "".join(final_mbti)
         return self.chat_result
