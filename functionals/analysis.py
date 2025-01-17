@@ -26,7 +26,7 @@ def get_start():
 
 @log_to_file
 def mbti_analysis(start, end, dataset='kaggle', types=0):
-    assert types in [0, 4, 6], "type 0 正常模式, type 4 消融4, type 6 消融6"
+    assert types in [0, 4, 6, 7], "type 0 正常模式, type 4 消融4, type 6 消融6, type 7 消融7"
     result = []
     data = config.mbti_data(dataset)
     try:
@@ -41,6 +41,8 @@ def mbti_analysis(start, end, dataset='kaggle', types=0):
                 mbti.run_single(task)
             elif types == 6:
                 mbti.run_without_vote(task)
+            elif types == 7:
+                mbti.run_without_confidenct(task)
             final_mbti = mbti.chat_result['final_mbti']
             if final_mbti[0] in "EI" and final_mbti[1] in "SN" and final_mbti[2] in "TF" and final_mbti[3] in "JP":
                 result.append(
