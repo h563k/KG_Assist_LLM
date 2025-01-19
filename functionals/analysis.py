@@ -33,6 +33,7 @@ def mbti_analysis(start, end, dataset='kaggle', types=0):
         start = max(get_start(), start)
         print(f"start: {start}")
         for i, (mbti_real, task) in enumerate(data.values[start:end]):
+            time.sleep(30)
             print("origin_task")
             mbti = MbtiChats()
             if types == 0:

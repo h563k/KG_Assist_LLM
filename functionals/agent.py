@@ -16,7 +16,7 @@ mbti = config.mbti
 
 
 class MbtiChats:
-    def __init__(self, max_round=mbti['max_round'], openai_type=mbti['openai_type'], model=mbti['model'], deepclean=mbti['deepclean'], cutoff=mbti['cutoff']) -> None:
+    def __init__(self, max_round=mbti['max_round'], openai_type=mbti['openai_type'], deepclean=mbti['deepclean'], cutoff=mbti['cutoff']) -> None:
         """
         :param max_round: Number of rounds for free discussion among three agents.
         专家讨论的轮数
@@ -27,8 +27,8 @@ class MbtiChats:
         :param model: openai model type, gpt-3.5-turbo or gpt-4
         模型选择
         """
-        self.model = model
         self.openai_type = openai_type
+        self.model = config.OpenAI[openai_type]['model']
         self.llm_config = self.env_init(openai_type)
         self.max_round = max_round
         self.chat_result = {}
@@ -340,7 +340,7 @@ In the MBTI dimension of type ({vote1}) vs. type ({vote2}):"""
         self.chat_result['final_mbti'] = "".join(
             self.chat_result['final_mbti'])
 
-    # @retry(wait=wait_random_exponential(min=1, max=60), stop=stop_after_attempt(0))
+    @retry(wait=wait_random_exponential(min=1, max=60), stop=stop_after_attempt(0))
     @log_to_file
     def run(self, task):
         if self.openai_type == "ollama":

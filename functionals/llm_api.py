@@ -16,10 +16,11 @@ mbti = config.mbti
 @retry(wait=wait_random_exponential(min=1, max=60), stop=stop_after_attempt(0))
 @log_to_file
 def openai_response(system_prompt, prompt, openai_type='openai_origin', stream=True) -> str:
-    openai.api_key = config.OpenAI[openai_type]['api_key']
-    openai.base_url = config.OpenAI[openai_type]['base_url']
+    openai_config = config.OpenAI
+    openai.api_key = openai_config[openai_type]['api_key']
+    openai.base_url = openai_config[openai_type]['base_url']
     response = openai.chat.completions.create(
-        model=mbti['model'],
+        model=openai_config[openai_type]['model'],
         seed=config.OpenAI['seed'],
         temperature=config.OpenAI['temperature'],
         presence_penalty=config.OpenAI['presence_penalty'],
