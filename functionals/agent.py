@@ -153,17 +153,16 @@ Use the following format for your response:
     def first_chats(self, task):
         temp = []
         task = f"""AUTHOR'S TEXT: {task}"""
+        first_chats_list = []
         for first_chat in [self.agent_dict['Semantic'], self.agent_dict['Sentiment'], self.agent_dict['Linguistic']]:
-            first_chats_list = [
-                initiate_chats([
-                    self.chat_unit(
-                        self.agent_dict['user_proxy'], first_chat, task),
-                ])
-            ]
+            first_chats_list.append(initiate_chats([
+                self.chat_unit(
+                    self.agent_dict['user_proxy'], first_chat, task),
+            ]))
             if self.openai_type == "ollama":
                 time.sleep(15)
-            for chat in first_chats_list:
-                temp.append(chat[0].chat_history[1])
+        for chat in first_chats_list:
+            temp.append(chat[0].chat_history[1])
         self.chat_result['first_chats'] = temp
 
         return first_chats_list
@@ -196,13 +195,12 @@ Use the following format for your response:
         combined_prompt = "\n".join(chat_prompts)
 
         # 初始化下一轮的聊天
+        next_chats = []
         for agent in [self.agent_dict['Semantic'], self.agent_dict['Sentiment'], self.agent_dict['Linguistic']]:
-            next_chats = [
-                initiate_chats([
-                    self.chat_unit(self.agent_dict['user_proxy'], agent,
-                                   f"""{task}\n\n{combined_prompt}""")
-                ])
-            ]
+            next_chats.append(initiate_chats([
+                self.chat_unit(self.agent_dict['user_proxy'], agent,
+                               f"""{task}\n\n{combined_prompt}""")
+            ]))
             if self.openai_type == "ollama":
                 time.sleep(15)
         return self.circle_chat(task, next_chats, nums + 1, max_depth)
@@ -360,7 +358,7 @@ In the MBTI dimension of type ({vote1}) vs. type ({vote2}):"""
         return self.chat_result
 
     # 消融4
-    @retry(wait=wait_random_exponential(min=1, max=60), stop=stop_after_attempt(0))
+    # @retry(wait=wait_random_exponential(min=1, max=60), stop=stop_after_attempt(0))
     @log_to_file
     def run_single(self, task):
         task = data_process(task, cutoff=self.cutoff)
