@@ -358,7 +358,7 @@ In the MBTI dimension of type ({vote1}) vs. type ({vote2}):"""
         return self.chat_result
 
     # 消融4
-    # @retry(wait=wait_random_exponential(min=1, max=60), stop=stop_after_attempt(0))
+    @retry(wait=wait_random_exponential(min=1, max=60), stop=stop_after_attempt(0))
     @log_to_file
     def run_single(self, task):
         task = data_process(task, cutoff=self.cutoff)
