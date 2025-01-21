@@ -61,7 +61,7 @@ def data_process(task: str, cutoff=mbti['cutoff']):
         else:
             response = openai_response(system_prompt, message)
         if mbti['openai_type'] == 'ollama':
-            time.sleep(0.5)
+            time.sleep(0.1)
         response = response.split('None')[0]
         print({"message": message, "response": response})
         if "YES" in response.upper():

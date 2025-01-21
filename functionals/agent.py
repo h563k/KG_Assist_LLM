@@ -160,7 +160,7 @@ Use the following format for your response:
                     self.agent_dict['user_proxy'], first_chat, task),
             ]))
             if self.openai_type == "ollama":
-                time.sleep(15)
+                time.sleep(0.1)
         for chat in first_chats_list:
             temp.append(chat[0].chat_history[1])
         self.chat_result['first_chats'] = temp
@@ -202,7 +202,7 @@ Use the following format for your response:
                                f"""{task}\n\n{combined_prompt}""")
             ]))
             if self.openai_type == "ollama":
-                time.sleep(15)
+                time.sleep(0.1)
         return self.circle_chat(task, next_chats, nums + 1, max_depth)
 
     @staticmethod
@@ -322,7 +322,7 @@ In the MBTI dimension of type ({vote1}) vs. type ({vote2}):"""
                     self.agent_dict['user_proxy'], self.agent_dict['Commentator'], battle_content)
             ])
             if self.openai_type == "ollama":
-                time.sleep(15)
+                time.sleep(0.1)
             agent_result = final_predict[0].chat_history[1]['content']
             self.chat_result[f'battle_{vote1}{vote2}'] = agent_result
             predict = self.get_mbti_predict(agent_result)

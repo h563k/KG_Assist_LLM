@@ -35,7 +35,7 @@ def mbti_analysis(start, end, dataset='kaggle', types=0):
         print(f"start: {start}")
         for i, (mbti_real, task) in enumerate(data.values[start:end]):
             if config.mbti['openai_type'] == 'ollama':
-                time.sleep(30)
+                time.sleep(0.1)
             print("origin_task")
             mbti = MbtiChats()
             if types == 0:
