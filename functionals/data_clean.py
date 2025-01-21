@@ -5,9 +5,10 @@ import time
 from functionals.llm_api import openai_response
 from functionals.system_config import ModelConfig
 
+config = ModelConfig()
+mbti = config.mbti
 
-def data_process(task: str, cutoff=3500):
-    config = ModelConfig()
+def data_process(task: str, cutoff=mbti['cutoff']):
     temp = []
     task = task.split('|||')
     for message in task:
