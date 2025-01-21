@@ -15,7 +15,7 @@ mbti = config.mbti
 
 @retry(wait=wait_random_exponential(min=1, max=60), stop=stop_after_attempt(0))
 @log_to_file
-def openai_response(system_prompt, prompt, openai_type='openai_origin', stream=True) -> str:
+def openai_response(system_prompt, prompt, openai_type=mbti['openai_type'], stream=True) -> str:
     openai_config = config.OpenAI
     openai.api_key = openai_config[openai_type]['api_key']
     openai.base_url = openai_config[openai_type]['base_url']
