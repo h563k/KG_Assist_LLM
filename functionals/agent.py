@@ -341,8 +341,6 @@ In the MBTI dimension of type ({vote1}) vs. type ({vote2}):"""
     @retry(wait=wait_random_exponential(min=1, max=60), stop=stop_after_attempt(0))
     @log_to_file
     def run(self, task):
-        if self.openai_type == "ollama":
-            return self.run_single(task)
         print('step1')
         task = data_process(task, cutoff=self.cutoff)
         self.chat_result['origin_task'] = task
