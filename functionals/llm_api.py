@@ -13,19 +13,22 @@ config = ModelConfig()
 mbti = config.mbti
 
 
-@retry(wait=wait_random_exponential(min=1, max=60), stop=stop_after_attempt(0))
+# @retry(wait=wait_random_exponential(min=1, max=60), stop=stop_after_attempt(0))
 @log_to_file
 def openai_response(system_prompt, prompt, openai_type=mbti['openai_type'], stream=True) -> str:
     openai_config = config.OpenAI
-    openai.api_key = openai_config[openai_type]['api_key']
-    openai.base_url = openai_config[openai_type]['base_url']
-    response = openai.chat.completions.create(
+    api_key = openai_config[openai_type]['api_key']
+    base_url = openai_config[openai_type]['base_url']
+    if base_url.endswith('/v1'):
+        base_url = base_url.strip('/v1')
+    client = openai.OpenAI(api_key=api_key, base_url=base_url)
+    response = client.chat.completions.create(
         model=openai_config[openai_type]['model'],
-        seed=config.OpenAI['seed'],
-        temperature=config.OpenAI['temperature'],
-        presence_penalty=config.OpenAI['presence_penalty'],
-        frequency_penalty=config.OpenAI['frequency_penalty'],
-        max_tokens=config.OpenAI['max_tokens'],
+        seed=openai_config['seed'],
+        temperature=openai_config['temperature'],
+        presence_penalty=openai_config['presence_penalty'],
+        frequency_penalty=openai_config['frequency_penalty'],
+        max_tokens=openai_config['max_tokens'],
         stream=stream,
         messages=[
             {"role": "system", "content": system_prompt},
