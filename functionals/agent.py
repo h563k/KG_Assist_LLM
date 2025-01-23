@@ -338,7 +338,7 @@ In the MBTI dimension of type ({vote1}) vs. type ({vote2}):"""
         self.chat_result['final_mbti'] = "".join(
             self.chat_result['final_mbti'])
 
-    @retry(wait=wait_random_exponential(min=1, max=60), stop=stop_after_attempt(0))
+    # @retry(wait=wait_random_exponential(min=1, max=60), stop=stop_after_attempt(0))
     @log_to_file
     def run(self, task):
         print('step1')
