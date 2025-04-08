@@ -19,7 +19,7 @@ def openai_response(system_prompt, prompt, openai_type=mbti['openai_type'], stre
     openai_config = config.OpenAI
     api_key = openai_config[openai_type]['api_key']
     base_url = openai_config[openai_type]['base_url']
-    if base_url.endswith('/v1'):
+    if base_url.endswith('/v1') and openai_type == 'deepseek':
         base_url = base_url.strip('/v1')
     client = openai.OpenAI(api_key=api_key, base_url=base_url)
     response = client.chat.completions.create(

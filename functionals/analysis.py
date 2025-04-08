@@ -11,8 +11,10 @@ config = ModelConfig()
 
 
 def get_start():
-    _, _, file_names = os.walk(
-        f'{config.file_path}/logs/debug').__next__()
+    debug_path = f'{config.file_path}/logs/debug'
+    if not os.path.exists(debug_path):
+        os.makedirs(debug_path)
+    _, _, file_names = os.walk(debug_path).__next__()
     if not file_names:
         return 0
     start = 0
@@ -62,10 +64,9 @@ def mbti_analysis(start, end, dataset='kaggle', types=0):
         count /= len(result)
         return [f"{x*100:.4f}%" for x in count], stats.hmean(count), len(result), result
     except Exception as e:
-        print(e)
-        time.sleep(600)
-        start += 1
-        mbti_analysis(start, end, dataset)
+        return e
+        # start += 1
+        # mbti_analysis(start, end, dataset)
 
 
 if __name__ == "__main__":

@@ -20,7 +20,7 @@ def data_process(task: str, cutoff=mbti['cutoff']):
             message = message.replace(web, '')
         temp.append(message) if message else None
     txt = "\n".join(temp)
-    deepclean_cutoff = cutoff * 10
+    deepclean_cutoff = cutoff * 1
     # TODO目前单纯通过文本去判断属于一个简易的判断, 这个不能作为一个非常合理的解释, 后期看看能不能给出更科学的判断依据. 比如存在大量无效文本的时候开启过滤
     deepclean = mbti['deepclean']
     # bert筛选，先进行句子拆分
@@ -59,9 +59,7 @@ def data_process(task: str, cutoff=mbti['cutoff']):
             if response:
                 print('deep clean dict')
         else:
-            response = openai_response(system_prompt, message)
-        if mbti['openai_type'] == 'ollama':
-            time.sleep(0.1)
+            response = openai_response(system_prompt=system_prompt, prompt=message,openai_type="qwen_deepseek")
         response = response.split('None')[0]
         print({"message": message, "response": response})
         if "YES" in response.upper():
