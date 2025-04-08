@@ -3,7 +3,7 @@ import json
 import time
 import numpy as np
 from scipy import stats
-from functionals.agent import MbtiChats
+from functionals.agent import MbtiChats, MbtiTwoAgent
 from functionals.system_config import ModelConfig
 from functionals.standard_log import log_to_file, debug
 
@@ -30,7 +30,7 @@ def get_start():
 @log_to_file
 def mbti_analysis(start, end, dataset='kaggle', types=0):
     assert types in [
-        0, 4, 6, 7], "type 0 正常模式, type 4 消融4, type 6 消融6, type 7 消融7"
+        0, 4, 6, 7], "type 0 正常模式, type 4 消融4, type 6 消融6, type 7 消融7, type 8 消融8"
     result = []
     data = config.mbti_data(dataset)
     try:
@@ -49,13 +49,16 @@ def mbti_analysis(start, end, dataset='kaggle', types=0):
                 mbti.run_without_vote(task)
             elif types == 7:
                 mbti.run_without_confidenct(task)
+            elif types == 8:
+                mbti = MbtiTwoAgent()
+                mbti.run(task)
             final_mbti = mbti.chat_result['final_mbti']
             check_mbit = final_mbti[0] in "EI" and final_mbti[1] in "SN" and final_mbti[2] in "TF" and final_mbti[3] in "JP"
             if not check_mbit:
                 mbti.chat_result = {}
                 mbti.run_single(task)
             result.append(
-                    [i+start, mbti_real, mbti.chat_result['final_mbti'], mbti.chat_result])
+                [i+start, mbti_real, mbti.chat_result['final_mbti'], mbti.chat_result])
             debug(result, f"{dataset}_{start}_{end}")
         count = np.zeros(4)
         for _, mbti_real, mbti_predict, _ in result:

@@ -283,7 +283,6 @@ Use the following format for your response:
 
     def battle(self, vote1, vote2, task):
         mbti_vote = self.chat_result['mbti_vote']
-        mbti_vote = self.chat_result['mbti_vote']
         vote1_data = mbti_vote[vote1]
         vote2_data = mbti_vote[vote2]
         if vote1_data[0] > vote2_data[0]:
@@ -338,7 +337,7 @@ In the MBTI dimension of type ({vote1}) vs. type ({vote2}):"""
         self.chat_result['final_mbti'] = "".join(
             self.chat_result['final_mbti'])
 
-    # @retry(wait=wait_random_exponential(min=1, max=60), stop=stop_after_attempt(0))
+    @retry(wait=wait_random_exponential(min=1, max=60), stop=stop_after_attempt(0))
     @log_to_file
     def run(self, task):
         print('step1')
@@ -389,4 +388,189 @@ In the MBTI dimension of type ({vote1}) vs. type ({vote2}):"""
         chats = chats.split("\n\n")
         final_mbti = self.get_mbti_predict(chats)
         self.chat_result['final_mbti'] = "".join(final_mbti)
+        return self.chat_result
+
+
+class MbtiTwoAgent(MbtiChats):
+    def __init__(self, max_round=mbti['max_round'], openai_type=mbti['openai_type'], deepclean=mbti['deepclean'], cutoff=mbti['cutoff']) -> None:
+        super().__init__(max_round, openai_type, deepclean, cutoff)
+        self.agent_list = ["Semantic", "Sentiment", "Linguistic"]
+        self.delet_agent = ["Sentiment"]
+        self.agent_dict.pop(self.delet_agent[0])
+        self.agent_list = [self.agent_dict[x]
+                           for x in self.agent_list if x not in self.delet_agent]
+
+    def first_chats(self, task):
+        temp = []
+        task = f"""AUTHOR'S TEXT: {task}"""
+        first_chats_list = []
+        for first_chat in self.agent_list:
+            first_chats_list.append(initiate_chats([
+                self.chat_unit(
+                    self.agent_dict['user_proxy'], first_chat, task),
+            ]))
+        for chat in first_chats_list:
+            temp.append(chat[0].chat_history[1])
+        self.chat_result['first_chats'] = temp
+        return first_chats_list
+
+    def check_vote(self, circle_chats: str):
+        expert_votes = ["Semantic", "Sentiment", "Linguistic"]
+        print('expert_votes')
+        print(expert_votes)
+        voter = None
+        for expert in expert_votes:
+            txt = f"The following are speculations from {expert} experts, just for reference, you can stick to your own opinion:\n "
+            if txt in circle_chats:
+                voter = expert
+                break
+        circle_chats = circle_chats.replace(txt, '').strip()
+        print('step4-2')
+        print(circle_chats)
+        mbti_predict = self.get_mbti_predict(circle_chats)
+        Confidence = re.findall(
+            r'\n.*?Confidence.*?(\d+\.\d+)', circle_chats, re.I)
+        Confidence = [float(i) for i in Confidence]
+        Reason = re.findall(r"Reason(.*)\n",
+                            circle_chats, re.I)
+        temp = []
+        for i in range(4):
+            result = [mbti_predict[i], Confidence[i], Reason[i]]
+            temp.append(result)
+        print('step4-3')
+        print('voter')
+        print(voter, temp)
+        return voter, temp
+
+    def vote(self):
+        circle_chat_final = self.chat_result[f'round_{self.max_round}']
+        vote_dict = {}
+        print('step4-1')
+        for circle_chats in circle_chat_final:
+            voter, circle_chat = self.check_vote(circle_chats)
+            vote_dict[voter] = circle_chat
+            print('step4-3-1')
+            print(vote_dict)
+        # 记录提取结果
+        print('step4-3-2')
+        self.chat_result['vote_dict'] = vote_dict
+        # 数据结构 ‘E’: [‘投票数量’， '平均分'， {'投票人':Reason}]
+        print('step4-3-3')
+        mbti_vote = {
+            'E': [0, 0, {}],
+            'I': [0, 0, {}],
+            'N': [0, 0, {}],
+            'S': [0, 0, {}],
+            'T': [0, 0, {}],
+            'F': [0, 0, {}],
+            'J': [0, 0, {}],
+            'P': [0, 0, {}]
+        }
+        print('step4-4')
+        print(vote_dict)
+        for expert, datas in vote_dict.items():
+            for data in datas:
+                vote_aim = mbti_vote[data[0]]
+                vote_aim[0] += 1
+                vote_aim[1] = max(vote_aim[1], data[1])
+                vote_aim[2][expert] = data[2]
+        print(mbti_vote)
+        # 记录计算结果
+        for _, vote_aim in mbti_vote.items():
+            vote_aim[1] = self.score_reset(vote_aim[1])
+        print('step4-5')
+        print(mbti_vote)
+        self.chat_result['mbti_vote'] = mbti_vote
+
+    def circle_chat(self, task, chats, nums, max_depth=3):
+        if nums > max_depth:
+            return
+        # 重复一遍
+        chat_prompts = []
+        for chat in chats:
+            chat_content = chat[0].chat_history[1]
+            message = f"""The following are speculations from {chat_content['name']} experts, just for reference, you can stick to your own opinion:
+        {chat_content['content']}"""
+            chat_prompts.append(message)
+        self.chat_result[f'round_{nums}'] = chat_prompts
+        combined_prompt = "\n".join(chat_prompts)
+
+        # 初始化下一轮的聊天
+        next_chats = []
+        for agent in self.agent_list:
+            next_chats.append(initiate_chats([
+                self.chat_unit(self.agent_dict['user_proxy'], agent,
+                               f"""{task}\n\n{combined_prompt}""")
+            ]))
+        return self.circle_chat(task, next_chats, nums + 1, max_depth)
+
+    def battle(self, vote1, vote2, task):
+        mbti_vote = self.chat_result['mbti_vote']
+        vote1_data = mbti_vote[vote1]
+        vote2_data = mbti_vote[vote2]
+
+        if vote1_data[0] == 2:
+            mbti_type = vote1
+            self.chat_result['final_mbti'].append(mbti_type)
+        elif vote2_data[0] == 2:
+            mbti_type = vote2
+            self.chat_result['final_mbti'].append(mbti_type)
+        else:
+            vote1_reason = "\n    Reason ".join(vote1_data[2].values())
+            vote2_reason = "\n    Reason ".join(vote2_data[2].values())
+            vote1_content = f"""\n- type ({vote1})
+there are {" ".join(vote1_data[2].keys())} agents think the **Classification** is {vote1}.
+the **Reason** is:
+    Reason {vote1_reason}.
+the **Confidence level** is {vote1_data[1]}."""
+            vote2_content = f"""\n- type ({vote2})
+there are {" ".join(vote2_data[2].keys())} agents think the **Classification** is {vote2}.
+the **Reason** is:
+    Reason {vote2_reason}.
+the **Confidence level** is {vote2_data[1]}."""
+            battle_content = f"""### AUTHOR'S TEXT
+    {task}\n\n
+### Experts' solutions
+In the MBTI dimension of type ({vote1}) vs. type ({vote2}):"""
+            if vote1_data[2].keys():
+                battle_content += vote1_content
+            if vote2_data[2].keys():
+                battle_content += vote2_content
+            self.chat_result[f'battle_content_{vote1}{vote2}'] = battle_content
+            final_predict = initiate_chats([
+                self.chat_unit(
+                    self.agent_dict['user_proxy'], self.agent_dict['Commentator'], battle_content)
+            ])
+            if self.openai_type == "ollama":
+                time.sleep(0.1)
+            agent_result = final_predict[0].chat_history[1]['content']
+            self.chat_result[f'battle_{vote1}{vote2}'] = agent_result
+            predict = self.get_mbti_predict(agent_result)
+            print('step5-2')
+            print(predict)
+            self.chat_result['final_mbti'].append("".join(predict))
+
+    def final_predict(self, task):
+        self.chat_result['final_mbti'] = []
+        mbti_types = [['E', 'I'], ['N', 'S'], ['T', 'F'], ['J', 'P']]
+        for vote1, vote2 in mbti_types:
+            self.battle(vote1, vote2, task)
+        self.chat_result['final_mbti'] = "".join(
+            self.chat_result['final_mbti'])
+
+    @retry(wait=wait_random_exponential(min=1, max=60), stop=stop_after_attempt(0))
+    @log_to_file
+    def run(self, task):
+        print('step1')
+        task = data_process(task, cutoff=self.cutoff)
+        self.chat_result['origin_task'] = task
+        print('step2')
+        first_chats = self.first_chats(task)
+        print('step3')
+        self.circle_chat(task, first_chats, 1, self.max_round)
+        print('step4')
+        self.vote()
+        print('step5')
+        self.final_predict(task)
+        print('step6')
         return self.chat_result
