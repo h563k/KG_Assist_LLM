@@ -14,6 +14,7 @@ def get_start():
     debug_path = f'{config.file_path}/logs/debug'
     if not os.path.exists(debug_path):
         os.makedirs(debug_path)
+        return 0
     _, _, file_names = os.walk(debug_path).__next__()
     if not file_names:
         return 0
