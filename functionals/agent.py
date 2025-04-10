@@ -268,8 +268,8 @@ Use the following format for your response:
 
     @staticmethod
     def get_mbti_predict(circle_chats: str):
-        if "Final Output Format" in circle_chats:
-            circle_chats = circle_chats.split("Final Output Format")[-1]
+        if "Final Output" in circle_chats:
+            circle_chats = circle_chats.split("Final Output")[-1]
         mbti_predict = re.findall(
             r'Classification.*?(E|I|S|N|T|F|J|P)', circle_chats)
         if mbti_predict:
