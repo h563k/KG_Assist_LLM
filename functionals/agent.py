@@ -91,6 +91,67 @@ class MbtiChats:
             human_input_mode="NEVER",  # 不请求人工输入
         )
         return agent
+    
+    def create_agent_cot(self, user_name):
+        agent = ConversableAgent(
+            name="COT",
+            llm_config=self.llm_config,
+            system_message=f"""```
+You are {user_name}, a specialist MBTI analyst focusing exclusively on semantic/sentiment/linguistic patterns. Examine the AUTHOR'S TEXT through your disciplinary lens using this thinking chain:
+
+1. **Text Analysis** (COT Step 1):
+- Semantic Expert: "Identify key themes, abstract concepts, and subject-object relationships..."
+- Sentiment Expert: "Detect emotional valence, subjective evaluations, and affect-loaded expressions..."
+- Linguistic Expert: "Analyze syntactic patterns, discourse markers, and lexical preferences..."
+
+1. **Trait Indicators** (COT Step 2):
+- Semantic Expert: "...focus on content substance over delivery style"
+- Sentiment Expert: "...prioritize emotional resonance in decision-making cues"
+- Linguistic Expert: "...examine structural features like pronoun frequency and tense usage"
+
+1. **Dimension Classification** (COT Step 3):
+Apply your specialized knowledge to each MBTI axis:
+
+[E/I] Analysis:
+- Classification: [Your decision, e.g., "E"]
+- Confidence Level: ___
+- Reasoning Chain: "The text shows ___ → which suggests ___ → therefore..."
+
+[S/N] Analysis:
+- Classification: [Your decision, e.g., "S"]
+- Confidence Level: ___
+- Reasoning Chain: "Language features like ___ → indicate ___ → leading to..."
+
+[T/F] Analysis:
+- Classification: [Your decision, e.g., "T"]
+- Confidence Level: ___
+- Reasoning Chain: "Patterns of ___ → demonstrate ___ → resulting in..."
+
+[J/P] Analysis:
+- Classification: [Your decision, e.g., "P"]
+- Confidence Level: ___
+- Reasoning Chain: "Structural elements including ___ → imply ___ → concluding..."
+
+**Final Output Format:**
+1. Extraversion (E) vs. Introversion (I):
+Classification: ["E"] or ["I"]
+
+2. Sensing (S) vs. Intuition (N):
+Classification: ["S"] or ["N"]
+
+
+3. Thinking (T) vs. Feeling (F):
+Classification: ["T"] or ["F"]
+
+
+4. Judging (J) vs. Perceiving (P): 
+Classification: ["J"] or ["P"]
+```
+""",
+            description="A helpful assistant that helps users with their questions.",
+            human_input_mode="NEVER",
+        )
+        return agent
 
     def create_agent(self, user_name):
         agent = ConversableAgent(
@@ -207,6 +268,8 @@ Use the following format for your response:
 
     @staticmethod
     def get_mbti_predict(circle_chats: str):
+        if "Final Output Format" in circle_chats:
+            circle_chats = circle_chats.split("Final Output Format")[-1]
         mbti_predict = re.findall(
             r'Classification.*?(E|I|S|N|T|F|J|P)', circle_chats)
         if mbti_predict:
@@ -390,12 +453,19 @@ In the MBTI dimension of type ({vote1}) vs. type ({vote2}):"""
         self.chat_result['final_mbti'] = "".join(final_mbti)
         return self.chat_result
 
+    @retry(wait=wait_random_exponential(min=1, max=60), stop=stop_after_attempt(0))
+    @log_to_file
+    def run_cot(self, task):
+        print("cot_version")
+        self.agent_dict['Single'] = self.create_agent_cot('personality analysis')
+        self.run_single(task)
+
 
 class MbtiTwoAgent(MbtiChats):
     def __init__(self, max_round=mbti['max_round'], openai_type=mbti['openai_type'], deepclean=mbti['deepclean'], cutoff=mbti['cutoff']) -> None:
         super().__init__(max_round, openai_type, deepclean, cutoff)
         self.agent_list = ["Semantic", "Sentiment", "Linguistic"]
-        self.delet_agent = ["Sentiment"]
+        self.delet_agent = ["Linguistic"]
         self.agent_dict.pop(self.delet_agent[0])
         self.agent_list = [self.agent_dict[x]
                            for x in self.agent_list if x not in self.delet_agent]
