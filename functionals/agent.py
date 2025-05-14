@@ -1,6 +1,7 @@
 import os
 import re
 import time
+from typing import List, Dict
 from autogen import initiate_chats, ConversableAgent
 from functionals.system_config import ModelConfig
 from functionals.standard_log import log_to_file, debug
@@ -43,7 +44,7 @@ class MbtiChats:
         self.deepclean = deepclean
         self.cutoff = cutoff
 
-    def env_init(self, openai_type) -> None:
+    def env_init(self, openai_type) -> Dict:
         os.environ['http_proxy'] = config.OpenAI['proxy']
         os.environ['https_proxy'] = config.OpenAI['proxy']
         os.environ['ftp_proxy'] = config.OpenAI['proxy']
@@ -168,25 +169,25 @@ For each dimension, provide:
 - **Confidence level**: A value between 0.0 and 1.0 that reflects how certain you are about the classification.
 Use the following format for your response:
 ```
-1. Extraversion (E) vs. Introversion (I):
-Classification: [Your decision, e.g., "E"]
-Reason: [Explain the reasoning behind your choice, e.g., "The user frequently discusses external social activities and expresses energy from interactions with others."]
-Confidence level: [Your confidence score, e.g., "0.8"]
+1. (E) vs. (I):
+Classification: [e.g., "E"]
+Reason: [Explain the reasoning behind your choice briefly]
+Confidence level: [e.g., "0.8"]
 
-2. Sensing (S) vs. Intuition (N):
-Classification: [Your decision, e.g., "N"]
-Reason: [Explain the reasoning behind your choice, e.g., "The user focuses on abstract ideas and future possibilities rather than concrete details."]
-Confidence level: [Your confidence score, e.g., "0.7"]
+2. (S) vs. (N):
+Classification: [e.g., "N"]
+Reason: [Explain the reasoning behind your choice briefly]
+Confidence level: [e.g., "0.7"]
 
-3. Thinking (T) vs. Feeling (F):
-Classification: [Your decision, e.g., "T"]
-Reason: [Explain the reasoning behind your choice, e.g., "The user emphasizes logical analysis and objectivity in decision-making."]
-Confidence level: [Your confidence score, e.g., "0.9"]
+3. (T) vs. (F):
+Classification: [e.g., "T"]
+Reason: [Explain the reasoning behind your choice briefly]
+Confidence level: [e.g., "0.9"]
 
-4. Judging (J) vs. Perceiving (P): 
-Classification: [Your decision, e.g., "P"]
-Reason: [Explain the reasoning behind your choice, e.g., "The user prefers flexible approaches and is open to last-minute changes."]
-Confidence level: [Your confidence score, e.g., "0.5"]
+4. (J) vs. (P): 
+Classification: [e.g., "P"]
+Reason: [Explain the reasoning behind your choice briefly]
+Confidence level: [e.g., "0.5"]
 ```
 Analyze the AUTHOR'S TEXT carefully, and provide a detailed and thoughtful response for each dimension.""",
             description=f"""{user_name} expert, skilled in analyzing user information from a {
@@ -203,8 +204,8 @@ Analyze the AUTHOR'S TEXT carefully, and provide a detailed and thoughtful respo
 
 Use the following format for your response:
 ```
-1. **Classification**: type (e.g. "E") vs. type (e.g. "I"): [Your decision, e.g., "E"]
-2. **Reason**: [Explain the reasoning behind your choice, e.g., "The user frequently discusses external social activities and expresses energy from interactions with others."]
+1. **Classification**: [Your decision, e.g., "E"]
+2. **Reason**: [Explain the reasoning behind your choice briefly"]
 3. **Confidence level**: [Your confidence score, e.g., "0.8"] """,
             description="""Review Expert, to conduct the final analysis and summary.""",
             human_input_mode="NEVER",
@@ -242,7 +243,7 @@ Use the following format for your response:
             return 0.1
     # TODO 后期考虑增加一个提前结束判断, 当三个专家在四个维度均达成一致时, 提前结束循环
 
-    def circle_chat(self, task, chats, nums, max_depth=3):
+    def circle_chat(self, task, chats, nums, max_depth):
         if nums > max_depth:
             return
         if nums > 1:
@@ -259,9 +260,8 @@ Use the following format for your response:
                     voter_result += voter[0]
                 voter_lists.add(voter_result)
             if len(voter_lists) == 1:
-                print("end self circle chat") 
-                for i in range(2, max_depth+1):
-                    self.chat_result[f'round_{i}'] = circle_chats
+                print("end self circle chat")
+                self.chat_result[f'round_{max_depth}'] = circle_chats
                 return
         # 重复一遍
         chat_prompts = []
@@ -278,14 +278,14 @@ Use the following format for your response:
         for agent in [self.agent_dict['Semantic'], self.agent_dict['Sentiment'], self.agent_dict['Linguistic']]:
             next_chats.append(initiate_chats([
                 self.chat_unit(self.agent_dict['user_proxy'], agent,
-                               f"""{task}\n\n{combined_prompt}""")
+                               f"""{combined_prompt}""")
             ]))
             if self.openai_type == "ollama":
                 time.sleep(0.1)
         return self.circle_chat(task, next_chats, nums + 1, max_depth)
 
     @staticmethod
-    def get_mbti_predict(circle_chats: str):
+    def get_mbti_predict(circle_chats: str) -> List:
         if "Final Output" in circle_chats:
             circle_chats = circle_chats.split("Final Output")[-1]
         mbti_predict = re.findall(
@@ -294,6 +294,8 @@ Use the following format for your response:
             print(circle_chats)
             print(mbti_predict)
             return mbti_predict
+        else:
+            return []
 
     # 按照新的框架，在结束讨论后，我们应当进入一个投票环节， 交给法官角色做最后判断
     def check_vote(self, circle_chats: str):
