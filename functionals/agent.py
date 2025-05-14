@@ -91,7 +91,7 @@ class MbtiChats:
             human_input_mode="NEVER",  # 不请求人工输入
         )
         return agent
-    
+
     def create_agent_cot(self, user_name):
         agent = ConversableAgent(
             name="COT",
@@ -245,6 +245,24 @@ Use the following format for your response:
     def circle_chat(self, task, chats, nums, max_depth=3):
         if nums > max_depth:
             return
+        if nums > 1:
+            print("start self check")
+            circle_chats = self.chat_result[f'round_{nums-1}']
+            temps = []
+            for circle_chat in circle_chats:
+                _, temp = self.check_vote(circle_chat)
+                temps.append(temp)
+            voter_lists = set()
+            for voter_list in temps:
+                voter_result = ""
+                for voter in voter_list:
+                    voter_result += voter[0]
+                voter_lists.add(voter_result)
+            if len(voter_lists) == 1:
+                print("end self circle chat") 
+                for i in range(2, max_depth+1):
+                    self.chat_result[f'round_{i}'] = circle_chats
+                return
         # 重复一遍
         chat_prompts = []
         for chat in chats:
@@ -288,7 +306,6 @@ Use the following format for your response:
                 break
         circle_chats = circle_chats.replace(txt, '').strip()
         print('step4-2')
-        print(circle_chats)
         mbti_predict = self.get_mbti_predict(circle_chats)
         Confidence = re.findall(
             r'\n.*?Confidence.*?(\d+\.\d+)', circle_chats, re.I)
@@ -457,7 +474,8 @@ In the MBTI dimension of type ({vote1}) vs. type ({vote2}):"""
     @log_to_file
     def run_cot(self, task):
         print("cot_version")
-        self.agent_dict['Single'] = self.create_agent_cot('personality analysis')
+        self.agent_dict['Single'] = self.create_agent_cot(
+            'personality analysis')
         self.run_single(task)
 
 
@@ -631,16 +649,16 @@ In the MBTI dimension of type ({vote1}) vs. type ({vote2}):"""
     @retry(wait=wait_random_exponential(min=1, max=60), stop=stop_after_attempt(0))
     @log_to_file
     def run(self, task):
-        print('step1')
+        print('step1-two')
         task = data_process(task, cutoff=self.cutoff)
         self.chat_result['origin_task'] = task
-        print('step2')
+        print('step2-two')
         first_chats = self.first_chats(task)
-        print('step3')
+        print('step3-two')
         self.circle_chat(task, first_chats, 1, self.max_round)
-        print('step4')
+        print('step4-two')
         self.vote()
-        print('step5')
+        print('step5-two')
         self.final_predict(task)
-        print('step6')
+        print('step6-two')
         return self.chat_result
