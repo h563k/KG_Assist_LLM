@@ -47,8 +47,8 @@ def mbti_analysis(start, end, dataset='kaggle', types=0):
                 mbti.run_single(task)
             elif types == 6:
                 mbti.run_without_vote(task)
-            elif types == 7:
-                mbti.run_without_confidenct(task)
+            # elif types == 7:
+            #     mbti.run_without_confidenct(task)
             elif types == 8:
                 mbti = MbtiTwoAgent()
                 mbti.run(task)
@@ -57,6 +57,7 @@ def mbti_analysis(start, end, dataset='kaggle', types=0):
             final_mbti = mbti.chat_result['final_mbti']
             check_mbit = final_mbti[0] in "EI" and final_mbti[1] in "SN" and final_mbti[2] in "TF" and final_mbti[3] in "JP"
             if not check_mbit:
+                print(f"error :{final_mbti}")
                 continue
             result.append(
                 [i+start, mbti_real, mbti.chat_result['final_mbti'], mbti.chat_result])
