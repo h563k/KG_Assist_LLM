@@ -78,7 +78,7 @@ class MbtiChats:
             "sender": sender,
             "recipient": recipient,
             "message": message,
-            "summary_method": "reflection_with_llm",
+            "summary_method": "last_msg",
             "max_turns": 1,
             "clear_history": False
         }
@@ -188,8 +188,7 @@ Confidence level: [e.g., "0.9"]
 Classification: [e.g., "P"]
 Reason: [Explain the reasoning behind your choice briefly]
 Confidence level: [e.g., "0.5"]
-```
-Analyze the AUTHOR'S TEXT carefully, and provide a detailed and thoughtful response for each dimension.""",
+```""",
             description=f"""{user_name} expert, skilled in analyzing user information from a {
                 user_name} angle to predict their MBTI personality type.""",
             human_input_mode="NEVER",
@@ -241,7 +240,6 @@ Use the following format for your response:
             return 0.3
         else:
             return 0.1
-    # TODO 后期考虑增加一个提前结束判断, 当三个专家在四个维度均达成一致时, 提前结束循环
 
     def circle_chat(self, task, chats, nums, max_depth):
         if nums > max_depth:
@@ -264,18 +262,25 @@ Use the following format for your response:
                 self.chat_result[f'round_{max_depth}'] = circle_chats
                 return
         # 重复一遍
-        chat_prompts = []
+        chat_prompts = {}  # 用于交给专家判断
+        chat_results = []  # 记录原始结果
         for chat in chats:
             chat_content = chat[0].chat_history[1]
             message = f"""The following are speculations from {chat_content['name']} experts, just for reference, you can stick to your own opinion:
         {chat_content['content']}"""
-            chat_prompts.append(message)
-        self.chat_result[f'round_{nums}'] = chat_prompts
-        combined_prompt = "\n".join(chat_prompts)
-
+            chat_prompts[chat_content['name']] = message
+            chat_results.append(message)
+        self.chat_result[f'round_{nums}'] = chat_results
         # 初始化下一轮的聊天
+        name_list = ['Semantic', 'Sentiment', 'Linguistic']
         next_chats = []
-        for agent in [self.agent_dict['Semantic'], self.agent_dict['Sentiment'], self.agent_dict['Linguistic']]:
+        for name in name_list:
+            temp = []
+            for expert in name_list:
+                if expert != name:
+                    temp.append(chat_prompts[expert])
+            combined_prompt = "\n".join(temp)
+            agent = self.agent_dict[name]
             next_chats.append(initiate_chats([
                 self.chat_unit(self.agent_dict['user_proxy'], agent,
                                f"""{combined_prompt}""")
@@ -590,7 +595,7 @@ class MbtiTwoAgent(MbtiChats):
         for agent in self.agent_list:
             next_chats.append(initiate_chats([
                 self.chat_unit(self.agent_dict['user_proxy'], agent,
-                               f"""{task}\n\n{combined_prompt}""")
+                               f"""{combined_prompt}""")
             ]))
         return self.circle_chat(task, next_chats, nums + 1, max_depth)
 
