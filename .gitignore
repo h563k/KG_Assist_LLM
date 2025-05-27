@@ -3,6 +3,8 @@ logs
 data/bert_train
 data/pand
 data/MBTI
+data/samples/*.csv
+data/samples/*.json
 test
 learning/coding
 
