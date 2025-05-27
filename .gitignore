@@ -1,6 +1,8 @@
 ### 不希望写入的文件夹
 logs
-data
+data/bert_train
+data/pand
+data/MBTI
 test
 learning/coding
 

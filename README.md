@@ -65,7 +65,7 @@ if __name__ == '__main__':
     start&end: the index of the dataset
     dataset: 'kaggle' or 'mbti' the dataset, each dataset gets 1000 samples
     types: 
-        0 : 
+        0 : default type
         4 : run with only one agent
         6 : run with muti-round discussion and no confidence voting
         8 : run with two-agent
