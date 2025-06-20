@@ -232,11 +232,11 @@ Use the following format for your response:
     def score_reset(score: float):
         if score == 1.0:
             return 1.0
-        elif 0.75 <= score < 1.0:
+        elif 0.9 <= score < 1.0:
             return 0.8
-        elif 0.5 <= score < 0.75:
+        elif 0.8 <= score < 0.9:
             return 0.5
-        elif 0.25 <= score < 0.5:
+        elif 0.6 <= score < 0.8:
             return 0.3
         else:
             return 0.1
