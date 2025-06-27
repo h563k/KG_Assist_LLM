@@ -59,7 +59,7 @@ def data_process(task: str, cutoff=mbti['cutoff']):
             if response:
                 print('deep clean dict')
         else:
-            response = openai_response(system_prompt=system_prompt, prompt=message,openai_type="qwen_deepseek")
+            response = openai_response(system_prompt=system_prompt, prompt=message,openai_type=mbti['openai_type'])
         response = response.split('None')[0]
         print({"message": message, "response": response})
         if "YES" in response.upper():
