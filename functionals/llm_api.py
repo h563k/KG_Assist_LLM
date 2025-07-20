@@ -1,5 +1,4 @@
 import openai
-# import torch
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
 from functionals.system_config import ModelConfig
 from functionals.standard_log import log_to_file
@@ -60,27 +59,3 @@ def llama_factory_api(prompt):
     ]
     result = client.chat.completions.create(messages=messages, model="test")
     return result.choices[0].message.content
-
-
-# def bert_api(input_text: str):
-#     # 加载模型和分词器
-#     model_path = f"{config.file_path}/data/bert_train/model"
-#     model = AutoModelForSequenceClassification.from_pretrained(model_path)
-#     tokenizer = AutoTokenizer.from_pretrained(model_path)
-
-#     # 对输入文本进行分词
-#     inputs = tokenizer(input_text, return_tensors="pt",
-#                        truncation=True, padding=True, max_length=512)
-#     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-#     model.to(device)
-#     inputs.to(device)
-#     # 进行预测
-#     with torch.no_grad():
-#         outputs = model(**inputs)
-
-#     # 获取预测结果
-#     logits = outputs.logits
-#     predictions = torch.argmax(logits, dim=-1)
-
-#     # 返回预测结果
-#     return predictions.item()
