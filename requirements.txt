@@ -2,8 +2,6 @@ langchain
 langchain_ollama
 pandas
 openai
-pyautogen
 scipy
 backoff
 httpx[socks]
-# flaml[automl]
