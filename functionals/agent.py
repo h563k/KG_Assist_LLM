@@ -92,6 +92,7 @@ class MbtiChats:
             human_input_mode="NEVER",  # 不请求人工输入
         )
         return agent
+    # TODO 补充创建COT
 
     def create_agent_cot(self, user_name):
         agent = ConversableAgent(
@@ -158,36 +159,42 @@ Classification: ["J"] or ["P"]
         agent = ConversableAgent(
             name=user_name,
             llm_config=self.llm_config,
-            system_message=f"""You are an {user_name} expert. Your task is to analyze the given AUTHOR'S TEXT and determine the MBTI personality type of the user based on four binary dimensions:
-1. **Extraversion (E) vs. Introversion (I)**
-2. **Sensing (S) vs. Intuition (N)**
-3. **Thinking (T) vs. Feeling (F)**
-4. **Judging (J) vs. Perceiving (P)**
+            system_message=f"""You are an {user_name} expert. Your task is to analyze the given AUTHOR'S TEXT and determine the OCEAN personality type of the user based on four binary dimensions:
+1. **Openness to experience**
+2. **Conscientiousness**
+3. **Extraversion**
+4. **Agreeableness**
+5. **Neuroticism**
 For each dimension, provide:
-- **Classification**: Your decision (e.g., "E" or "I").
+- **Classification**: Your decision (e.g., "Y" or "N").
 - **Reason**: A brief explanation of why you made this classification.
 - **Confidence level**: A value between 0.0 and 1.0 that reflects how certain you are about the classification.
 Use the following format for your response:
 ```
-1. (E) vs. (I):
-Classification: [e.g., "E"]
+1. Openness to experience:
+Classification: [e.g., "Y"]
 Reason: [Explain the reasoning behind your choice briefly]
 Confidence level: [e.g., "0.8"]
 
-2. (S) vs. (N):
+2. Conscientiousness:
 Classification: [e.g., "N"]
 Reason: [Explain the reasoning behind your choice briefly]
 Confidence level: [e.g., "0.7"]
 
-3. (T) vs. (F):
-Classification: [e.g., "T"]
+3. Extraversion:
+Classification: [e.g., "Y"]
 Reason: [Explain the reasoning behind your choice briefly]
 Confidence level: [e.g., "0.9"]
 
-4. (J) vs. (P): 
-Classification: [e.g., "P"]
+4. Agreeableness: 
+Classification: [e.g., "N"]
 Reason: [Explain the reasoning behind your choice briefly]
 Confidence level: [e.g., "0.5"]
+
+5. Neuroticism: 
+Classification: [e.g., "Y"]
+Reason: [Explain the reasoning behind your choice briefly]
+Confidence level: [e.g., "0.6"]
 ```""",
             description=f"""{user_name} expert, skilled in analyzing user information from a {
                 user_name} angle to predict their MBTI personality type.""",
@@ -199,11 +206,11 @@ Confidence level: [e.g., "0.5"]
         Commentator = ConversableAgent(
             name="Commentator",
             llm_config=self.llm_config,
-            system_message="""You are an arbiter with expertise in the MBTI domain. Please read the given AUTHOR'S TEXT and carefully review the following solutions from Semantic, Sentiment, and Linguistic agents as additional information, determine the MBTI personality type .
+            system_message="""You are an arbiter with expertise in the OCEAN domain. Please read the given AUTHOR'S TEXT and carefully review the following solutions from Semantic, Sentiment, and Linguistic agents as additional information, determine the OCEAN personality type .
 
 Use the following format for your response:
 ```
-1. **Classification**: [Your decision, e.g., "E"]
+1. **Classification**: [Your decision, e.g., "Y"]
 2. **Reason**: [Explain the reasoning behind your choice briefly"]
 3. **Confidence level**: [Your confidence score, e.g., "0.8"] """,
             description="""Review Expert, to conduct the final analysis and summary.""",
@@ -294,7 +301,7 @@ Use the following format for your response:
         if "Final Output" in circle_chats:
             circle_chats = circle_chats.split("Final Output")[-1]
         mbti_predict = re.findall(
-            r'Classification.*?(E|I|S|N|T|F|J|P)', circle_chats)
+            r'Classification.*?(Y|N)', circle_chats)
         if mbti_predict:
             print(circle_chats)
             print(mbti_predict)
@@ -320,7 +327,7 @@ Use the following format for your response:
         Reason = re.findall(r"Reason(.*)\n",
                             circle_chats, re.I)
         temp = []
-        for i in range(4):
+        for i in range(5):
             result = [mbti_predict[i], Confidence[i], Reason[i]]
             temp.append(result)
         print('step4-3')
@@ -342,85 +349,83 @@ Use the following format for your response:
         self.chat_result['vote_dict'] = vote_dict
         # 数据结构 ‘E’: [‘投票数量’， '平均分'， {'投票人':Reason}]
         print('step4-3-3')
-        mbti_vote = {
-            'E': [0, 0, {}],
-            'I': [0, 0, {}],
-            'N': [0, 0, {}],
-            'S': [0, 0, {}],
-            'T': [0, 0, {}],
-            'F': [0, 0, {}],
-            'J': [0, 0, {}],
-            'P': [0, 0, {}]
-        }
+        mbti_vote = [[0, 0, {}]] * 10
         print('step4-4')
-        print(vote_dict)
+        mbti_vote = [[0, 0, {}] for _ in range(10)]
         for expert, datas in vote_dict.items():
-            for data in datas:
-                vote_aim = mbti_vote[data[0]]
-                vote_aim[0] += 1
-                vote_aim[1] = max(vote_aim[1], data[1])
-                vote_aim[2][expert] = data[2]
+            for i, data in enumerate(datas):
+                if data[0] == "Y":
+                    mbti_vote[2*i][0] += 1
+                    mbti_vote[2*i][1] = max(mbti_vote[2*i][1], data[1])
+                    mbti_vote[2*i][2][expert] = data[2]
+                elif data[0] == "N":
+                    mbti_vote[2*i+1][0] += 1
+                    mbti_vote[2*i+1][1] = max(mbti_vote[2*i+1][1], data[1])
+                    mbti_vote[2*i+1][2][expert] = data[2]
         print(mbti_vote)
         # 记录计算结果
-        for _, vote_aim in mbti_vote.items():
+        for vote_aim in mbti_vote:
             vote_aim[1] = self.score_reset(vote_aim[1])
         print('step4-5')
         print(mbti_vote)
         self.chat_result['mbti_vote'] = mbti_vote
 
-    def battle(self, vote1, vote2, task):
+    def battle(self, ocean_num, types, task):
         mbti_vote = self.chat_result['mbti_vote']
-        vote1_data = mbti_vote[vote1]
-        vote2_data = mbti_vote[vote2]
-        if vote1_data[0] > vote2_data[0]:
-            mbti_type = vote1
-        else:
-            mbti_type = vote2
-        print('step5-1')
-        print(mbti_type)
+        vote1_data = mbti_vote[ocean_num*2]
+        vote2_data = mbti_vote[ocean_num*2 + 1]
+        # print('vote1_data', vote1_data)
+        # print('vote2_data', vote2_data)
         # 投票完全一致 或者2位专家均给出0.5以上分数不进入辩论环节
-        if mbti_vote[mbti_type][1] > 0.5 or mbti_vote[mbti_type][0] == 3:
-            self.chat_result['final_mbti'].append(mbti_type)
+        if vote1_data[0] > vote2_data[0]:
+            mbti_type = "Y"
+            if vote1_data[0] == 3 or vote1_data[1] > 0.5:
+                self.chat_result['final_mbti'].append(mbti_type)
+                return
         else:
-            vote1_reason = "\n    Reason ".join(vote1_data[2].values())
-            vote2_reason = "\n    Reason ".join(vote2_data[2].values())
-            vote1_content = f"""\n- type ({vote1})
-there are {" ".join(vote1_data[2].keys())} agents think the **Classification** is {vote1}.
-the **Reason** is:
+            mbti_type = "N"
+            if vote2_data[0] == 3 or vote2_data[1] > 0.5:
+                self.chat_result['final_mbti'].append(mbti_type)
+                return
+        print('step5-1')
+        vote1_reason = "\nReason ".join(vote1_data[2].values())
+        vote2_reason = "\nReason ".join(vote2_data[2].values())
+        vote1_content = f"""\nthere are {" ".join(vote1_data[2].keys())} agents think the **Classification** is Y.
+    the **Reason** is:
     Reason {vote1_reason}.
-the **Confidence level** is {vote1_data[1]}."""
-            vote2_content = f"""\n- type ({vote2})
-there are {" ".join(vote2_data[2].keys())} agents think the **Classification** is {vote2}.
-the **Reason** is:
+    the **Confidence level** is {vote1_data[1]}."""
+        vote2_content = f"""\nthere are {" ".join(vote2_data[2].keys())} agents think the **Classification** is N.
+    the **Reason** is:
     Reason {vote2_reason}.
-the **Confidence level** is {vote2_data[1]}."""
-            battle_content = f"""### AUTHOR'S TEXT
+    the **Confidence level** is {vote2_data[1]}."""
+        battle_content = f"""### AUTHOR'S TEXT
     {task}\n\n
-### Experts' solutions
-In the MBTI dimension of type ({vote1}) vs. type ({vote2}):"""
-            if vote1_data[2].keys():
-                battle_content += vote1_content
-            if vote2_data[2].keys():
-                battle_content += vote2_content
-            self.chat_result[f'battle_content_{vote1}{vote2}'] = battle_content
-            final_predict = initiate_chats([
-                self.chat_unit(
-                    self.agent_dict['user_proxy'], self.agent_dict['Commentator'], battle_content)
-            ])
-            if self.openai_type == "ollama":
-                time.sleep(0.1)
-            agent_result = final_predict[0].chat_history[1]['content']
-            self.chat_result[f'battle_{vote1}{vote2}'] = agent_result
-            predict = self.get_mbti_predict(agent_result)
-            print('step5-2')
-            print(predict)
-            self.chat_result['final_mbti'].append("".join(predict))
+    ### Experts' solutions
+    In the OCEAN dimension of type **{types}**"""
+        if vote1_data[2].keys():
+            battle_content += vote1_content
+        if vote2_data[2].keys():
+            battle_content += vote2_content
+        print(battle_content)
+        self.chat_result[f'battle_content_{types}'] = battle_content
+        final_predict = initiate_chats([
+            self.chat_unit(
+                self.agent_dict['user_proxy'], self.agent_dict['Commentator'], battle_content)
+        ])
+        if self.openai_type == "ollama":
+            time.sleep(0.1)
+        agent_result = final_predict[0].chat_history[1]['content']
+        self.chat_result[f'battle_{types}'] = agent_result
+        predict = self.get_mbti_predict(agent_result)
+        print('step5-2')
+        print(predict)
+        self.chat_result['final_mbti'].append("".join(predict))
 
     def final_predict(self, task):
         self.chat_result['final_mbti'] = []
-        mbti_types = [['E', 'I'], ['N', 'S'], ['T', 'F'], ['J', 'P']]
-        for vote1, vote2 in mbti_types:
-            self.battle(vote1, vote2, task)
+        mbti_types = ["Openness to experience", "Conscientiousness", "Extraversion", "Agreeableness", "Neuroticism"]
+        for i, mbti_type in enumerate(mbti_types):
+            self.battle(i, mbti_type, task)
         self.chat_result['final_mbti'] = "".join(
             self.chat_result['final_mbti'])
 

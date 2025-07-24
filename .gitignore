@@ -3,9 +3,13 @@ logs
 data/bert_train
 data/pand
 data/MBTI
-data/samples/*.csv
+*.csv
 data/samples/*.json
-test
+data/*.ipynb
+data/jing*
+data/*.xlsx
+data/*.json
+*test*
 learning/coding
 
 ### 不希望写入的文件

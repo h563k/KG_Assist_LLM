@@ -3,5 +3,7 @@ langchain_ollama
 pandas
 openai
 scipy
+datasets
+transformers
 backoff
 httpx[socks]

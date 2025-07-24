@@ -6,18 +6,18 @@ from datetime import datetime
 from functionals.system_config import ModelConfig
 
 
-
-
 def log_to_file(func):
     file_path = os.path.abspath(__file__)
     file_path = os.path.dirname(os.path.dirname(file_path))
     file_path = os.path.join(file_path, 'logs')
     now = datetime.now().strftime("%Y%m%d_%H")
+
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
         # 获取函数名称作为日志文件名的基础
         log_filename = f"{file_path}/{func.__name__}_{now}.log"
-
+        if not os.path.exists(file_path):
+            os.makedirs(file_path)
         # 配置日志
         logging.basicConfig(
             filename=log_filename,

@@ -55,16 +55,20 @@ def mbti_analysis(start, end, dataset='kaggle', types=0):
             elif types == 9:
                 mbti.run_cot(task)
             final_mbti = mbti.chat_result['final_mbti']
-            check_mbit = final_mbti[0] in "EI" and final_mbti[1] in "SN" and final_mbti[2] in "TF" and final_mbti[3] in "JP"
+            check_mbit = True
+            for mbti_char in final_mbti:
+                if mbti_char not in "YN":
+                    check_mbit = False
+                    break
             if not check_mbit:
                 print(f"error :{final_mbti}")
                 continue
             result.append(
                 [i+start, mbti_real, mbti.chat_result['final_mbti'], mbti.chat_result])
             debug(result, f"{dataset}_{start}_{end}")
-        count = np.zeros(4)
+        count = np.zeros(5)
         for _, mbti_real, mbti_predict, _ in result:
-            for i in range(4):
+            for i in range(5):
                 if mbti_real[i] == mbti_predict[i]:
                     count[i] += 1
         count /= len(result)
