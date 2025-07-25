@@ -5,6 +5,7 @@ import numpy as np
 from scipy import stats
 from functionals.agent import MbtiChats, MbtiTwoAgent
 from functionals.system_config import ModelConfig
+from functionals.PADO import PADO
 from functionals.standard_log import log_to_file, debug
 
 config = ModelConfig()
@@ -30,7 +31,7 @@ def get_start():
 @log_to_file
 def mbti_analysis(start, end, dataset='kaggle', types=0):
     assert types in [
-        0, 4, 6, 7, 8, 9], "type 0 正常模式, type 4 消融4, type 6 消融6, type 7 消融7, type 8 消融8 (双专家系统), type 9 消融9 (COT思维模式)"
+        0, 4, 6, 7, 8, 9, 10], "type 0 正常模式, type 4 消融4, type 6 消融6, type 7 消融7, type 8 消融8 (双专家系统), type 9 消融9 (COT思维模式) type 10 PADO"
     result = []
     data = config.mbti_data(dataset)
     try:
@@ -54,6 +55,9 @@ def mbti_analysis(start, end, dataset='kaggle', types=0):
                 mbti.run(task)
             elif types == 9:
                 mbti.run_cot(task)
+            elif types == 10:
+                mbti = PADO()
+                mbti.judge(task)
             final_mbti = mbti.chat_result['final_mbti']
             check_mbit = True
             for mbti_char in final_mbti:

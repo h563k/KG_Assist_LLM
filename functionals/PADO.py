@@ -1,3 +1,4 @@
+import re
 import random
 from functionals.llm_api import openai_response
 
@@ -118,12 +119,7 @@ def judge_personality3(ocean_type, text):
     3. Final Judgment: Conclude whether the user’s trait is high or low, and briefly
     explain your reasoning based on the stronger analysis.
     Output format:
-    1. Comparative Analysis
-    - compare and evaluate each element:
-    2. Overall Evaluation
-    - overall comparison results
-    3. Final Judgement
-    - (High/Low)
+    Final Judgement: (High/Low)
     Text: {text}
     Explainer A: {explain_1}
     Explainer B: {explain_2}
@@ -141,6 +137,31 @@ def judge_personality3(ocean_type, text):
         trait=ocean_type, text=text, explain_1=explain_1, explain_2=explain_2)
     response = openai_response(system_prompt=sys_p, prompt=usr_p)
     return response
+
+
+class PADO:
+    def __init__(self):
+        self.chat_result = {
+            'final_mbti': '',
+            'final_explain': {}
+        }
+
+    def get_prediction(self, text):
+        text = re.findall(r'Final.*?Judgment:.*?(High|Low)', text)
+        if text and text[0] in ['High', 'Low']:
+            return text[0]
+        else:
+            return random.choice(['High', 'Low'])
+
+    def judge(self, text):
+        ocean_types = ["Openness", "Conscientiousness",
+                       "Extraversion", "Agreeableness", "Neuroticism"]
+        final_mbti = ""
+        for ocean_type in ocean_types:
+            respnse = judge_personality3(ocean_type, text)
+            self.chat_result['final_explain'][ocean_type] = respnse
+            final_mbti += self.get_prediction(respnse)
+        self.chat_result['final_mbti'] = final_mbti
 
 
 if __name__ == "__main__":
