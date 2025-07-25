@@ -8,5 +8,6 @@ if __name__ == '__main__':
     # type 7 消融7 取消
     # type 8 消融8 (双专家系统)
     # type 9 消融9 (COT思维模式)
-    mbti_analysis(start=0, end=10, dataset='essays', types=0)
+    for _ in range(10):
+        mbti_analysis(start=0, end=300, dataset='essays', types=0)
     # mbti_analysis(start=50, end=100, dataset='kaggle', types=8)

@@ -43,19 +43,4 @@ def openai_response(system_prompt, prompt, openai_type=mbti['openai_type'], stre
     else:
         return response.choices[0].message.content
 
-# TODO 目前来看7b模型训练效果不太理想，待进一步研究，目前先不考虑
 
-
-def llama_factory_api(prompt):
-    # change to your custom port
-    system_prompt = "Please read the following content and determine if it involves any MBTI personality traits and any character characteristics,just respond with a simple 'Yes' or 'No'"
-    client = openai.OpenAI(
-        api_key="0",
-        base_url="http://127.0.0.1:8000/v1",
-    )
-    messages = [
-        {"role": "system", "content": system_prompt},
-        {"role": "user", "content": prompt}
-    ]
-    result = client.chat.completions.create(messages=messages, model="test")
-    return result.choices[0].message.content
