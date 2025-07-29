@@ -173,10 +173,10 @@ Classification: ["H"] or ["L"]
 4. **Agreeableness**
 5. **Neuroticism**
 For each dimension, provide:
-- **Classification**: Your decision (e.g., "H" or "L"). (H means high, L means low)
+- **Classification**: Your decision (e.g., "H" or "L"). 
 - **Reason**: A brief explanation of why you made this classification.
 - **Confidence level**: A value between 0.0 and 1.0 that reflects how certain you are about the classification.
-Use the following format for your response:
+Use the following format for your response (H means high, L means low):
 ```
 1. Openness to experience:
 Classification: [e.g., "H"]
@@ -215,9 +215,9 @@ Confidence level: [e.g., "0.6"]
             llm_config=self.llm_config,
             system_message="""You are an arbiter with expertise in the OCEAN domain. Please read the given AUTHOR'S TEXT and carefully review the following solutions from Semantic, Sentiment, and Linguistic agents as additional information, determine the OCEAN personality type .
 
-Use the following format for your response:
+Use the following format for your response (H means high, L means low):
 ```
-1. **Classification**: [Your decision, e.g., "H" or "L"] (H means high, L means low)
+1. **Classification**: [Your decision, e.g., "H" or "L"] 
 2. **Reason**: [Explain the reasoning behind your choice briefly"]
 3. **Confidence level**: [Your confidence score, e.g., "0.8"] """,
             description="""Review Expert, to conduct the final analysis and summary.""",
