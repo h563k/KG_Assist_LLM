@@ -43,6 +43,7 @@ class MbtiChats:
         }
         self.deepclean = deepclean
         self.cutoff = cutoff
+        self.turn = {"H": "Y", "L": "N"}
 
     def env_init(self, openai_type) -> Dict:
         os.environ['http_proxy'] = config.OpenAI['proxy']
@@ -92,62 +93,68 @@ class MbtiChats:
             human_input_mode="NEVER",  # 不请求人工输入
         )
         return agent
-    # TODO 补充创建COT
-
     def create_agent_cot(self, user_name):
         agent = ConversableAgent(
             name="COT",
             llm_config=self.llm_config,
             system_message=f"""```
-You are {user_name}, a specialist MBTI analyst focusing exclusively on semantic/sentiment/linguistic patterns. Examine the AUTHOR'S TEXT through your disciplinary lens using this thinking chain:
+You are {user_name}, a specialist OCEAN analyst focusing exclusively on semantic/sentiment/linguistic patterns. Examine the AUTHOR'S TEXT through your disciplinary lens using this thinking chain:
 
 1. **Text Analysis** (COT Step 1):
 - Semantic Expert: "Identify key themes, abstract concepts, and subject-object relationships..."
 - Sentiment Expert: "Detect emotional valence, subjective evaluations, and affect-loaded expressions..."
 - Linguistic Expert: "Analyze syntactic patterns, discourse markers, and lexical preferences..."
 
-1. **Trait Indicators** (COT Step 2):
+2. **Trait Indicators** (COT Step 2):
 - Semantic Expert: "...focus on content substance over delivery style"
 - Sentiment Expert: "...prioritize emotional resonance in decision-making cues"
 - Linguistic Expert: "...examine structural features like pronoun frequency and tense usage"
 
-1. **Dimension Classification** (COT Step 3):
-Apply your specialized knowledge to each MBTI axis:
+3. **Dimension Classification** (COT Step 3):
+Apply your specialized knowledge to each OCEAN axis (H for high, L for low):
 
-[E/I] Analysis:
-- Classification: [Your decision, e.g., "E"]
+[O] Openness to experience:
+- Classification: [Your decision, e.g., "H"]
 - Confidence Level: ___
 - Reasoning Chain: "The text shows ___ → which suggests ___ → therefore..."
 
-[S/N] Analysis:
-- Classification: [Your decision, e.g., "S"]
+[C] Conscientiousness:
+- Classification: [Your decision, e.g., "H"]
+- Confidence Level: ___
+- Reasoning Chain: "Patterns of ___ → indicate ___ → leading to..."
+
+[E] Extraversion:
+- Classification: [Your decision, e.g., "H"]
 - Confidence Level: ___
 - Reasoning Chain: "Language features like ___ → indicate ___ → leading to..."
 
-[T/F] Analysis:
-- Classification: [Your decision, e.g., "T"]
+[A] Agreeableness:
+- Classification: [Your decision, e.g., "L"]
 - Confidence Level: ___
 - Reasoning Chain: "Patterns of ___ → demonstrate ___ → resulting in..."
 
-[J/P] Analysis:
-- Classification: [Your decision, e.g., "P"]
+[N] Neuroticism:
+- Classification: [Your decision, e.g., "L"]
 - Confidence Level: ___
 - Reasoning Chain: "Structural elements including ___ → imply ___ → concluding..."
 
 **Final Output Format:**
-1. Extraversion (E) vs. Introversion (I):
-Classification: ["E"] or ["I"]
+1. Openness to experience:
+Classification: ["H"] or ["L"]
 
-2. Sensing (S) vs. Intuition (N):
-Classification: ["S"] or ["N"]
-
-
-3. Thinking (T) vs. Feeling (F):
-Classification: ["T"] or ["F"]
+2. Conscientiousness:
+Classification: ["H"] or ["L"]
 
 
-4. Judging (J) vs. Perceiving (P): 
-Classification: ["J"] or ["P"]
+3. Extraversion:
+Classification: ["H"] or ["L"]
+
+
+4. Agreeableness: 
+Classification: ["H"] or ["L"]
+
+5. Neuroticism:
+Classification: ["H"] or ["L"]
 ```
 """,
             description="A helpful assistant that helps users with their questions.",
@@ -166,33 +173,33 @@ Classification: ["J"] or ["P"]
 4. **Agreeableness**
 5. **Neuroticism**
 For each dimension, provide:
-- **Classification**: Your decision (e.g., "Y" or "N").
+- **Classification**: Your decision (e.g., "H" or "L"). (H means high, L means low)
 - **Reason**: A brief explanation of why you made this classification.
 - **Confidence level**: A value between 0.0 and 1.0 that reflects how certain you are about the classification.
 Use the following format for your response:
 ```
 1. Openness to experience:
-Classification: [e.g., "Y"]
+Classification: [e.g., "H"]
 Reason: [Explain the reasoning behind your choice briefly]
 Confidence level: [e.g., "0.8"]
 
 2. Conscientiousness:
-Classification: [e.g., "N"]
+Classification: [e.g., "L"]
 Reason: [Explain the reasoning behind your choice briefly]
 Confidence level: [e.g., "0.7"]
 
 3. Extraversion:
-Classification: [e.g., "Y"]
+Classification: [e.g., "H"]
 Reason: [Explain the reasoning behind your choice briefly]
 Confidence level: [e.g., "0.9"]
 
 4. Agreeableness: 
-Classification: [e.g., "N"]
+Classification: [e.g., "L"]
 Reason: [Explain the reasoning behind your choice briefly]
 Confidence level: [e.g., "0.5"]
 
 5. Neuroticism: 
-Classification: [e.g., "Y"]
+Classification: [e.g., "H"]
 Reason: [Explain the reasoning behind your choice briefly]
 Confidence level: [e.g., "0.6"]
 ```""",
@@ -210,7 +217,7 @@ Confidence level: [e.g., "0.6"]
 
 Use the following format for your response:
 ```
-1. **Classification**: [Your decision, e.g., "Y"]
+1. **Classification**: [Your decision, e.g., "H" or "L"] (H means high, L means low)
 2. **Reason**: [Explain the reasoning behind your choice briefly"]
 3. **Confidence level**: [Your confidence score, e.g., "0.8"] """,
             description="""Review Expert, to conduct the final analysis and summary.""",
@@ -301,7 +308,7 @@ Use the following format for your response:
         if "Final Output" in circle_chats:
             circle_chats = circle_chats.split("Final Output")[-1]
         mbti_predict = re.findall(
-            r'Classification.*?(Y|N)', circle_chats)
+            r'Classification.*?(H|L)', circle_chats)
         if mbti_predict:
             print(circle_chats)
             print(mbti_predict)
@@ -354,11 +361,11 @@ Use the following format for your response:
         mbti_vote = [[0, 0, {}] for _ in range(10)]
         for expert, datas in vote_dict.items():
             for i, data in enumerate(datas):
-                if data[0] == "Y":
+                if data[0] == "H":
                     mbti_vote[2*i][0] += 1
                     mbti_vote[2*i][1] = max(mbti_vote[2*i][1], data[1])
                     mbti_vote[2*i][2][expert] = data[2]
-                elif data[0] == "N":
+                elif data[0] == "L":
                     mbti_vote[2*i+1][0] += 1
                     mbti_vote[2*i+1][1] = max(mbti_vote[2*i+1][1], data[1])
                     mbti_vote[2*i+1][2][expert] = data[2]
@@ -376,26 +383,35 @@ Use the following format for your response:
         vote2_data = mbti_vote[ocean_num*2 + 1]
         # print('vote1_data', vote1_data)
         # print('vote2_data', vote2_data)
-        # 投票完全一致 或者2位专家均给出0.5以上分数不进入辩论环节
+        # 2位专家均给出0.5以上分数不进入辩论环节
+        # 投票
         if vote1_data[0] > vote2_data[0]:
-            mbti_type = "Y"
-            if vote1_data[0] == 3 or vote1_data[1] > 0.5:
+            mbti_type = "H"
+            if vote1_data[1] > 0.5:
                 self.chat_result['final_mbti'].append(mbti_type)
+                return
+            elif vote1_data[0] == 3 and vote1_data[1] < 0.5:
+                self.chat_result['final_mbti'].append("L")
                 return
         else:
-            mbti_type = "N"
-            if vote2_data[0] == 3 or vote2_data[1] > 0.5:
+            mbti_type = "L"
+            if vote2_data[1] > 0.5:
                 self.chat_result['final_mbti'].append(mbti_type)
                 return
+            elif vote2_data[0] == 3 and vote2_data[1]<0.5:
+                self.chat_result['final_mbti'].append("H")
+                return
         print('step5-1')
-        vote1_reason = "\nReason ".join(vote1_data[2].values())
-        vote2_reason = "\nReason ".join(vote2_data[2].values())
-        vote1_content = f"""\nthere are {" ".join(vote1_data[2].keys())} agents think the **Classification** is Y.
+        vote1_reason = "\nReason ".join(
+            vote1_data[2].values()) if vote1_data[2] else ""
+        vote2_reason = "\nReason ".join(
+            vote2_data[2].values()) if vote2_data[2] else ""
+        vote1_content = f"""\nthere are {" ".join(vote1_data[2].keys())} agents think the **Classification** is H.
     the **Reason** is:
     Reason {vote1_reason}.
     the **Confidence level** is {vote1_data[1]}."""
-        vote2_content = f"""\nthere are {" ".join(vote2_data[2].keys())} agents think the **Classification** is N.
-    the **Reason** is:
+        vote2_content = f"""\nthere are {" ".join(vote2_data[2].keys())} agents think the **Classification** is L.
+    the **Reason** is:ß
     Reason {vote2_reason}.
     the **Confidence level** is {vote2_data[1]}."""
         battle_content = f"""### AUTHOR'S TEXT
@@ -423,11 +439,14 @@ Use the following format for your response:
 
     def final_predict(self, task):
         self.chat_result['final_mbti'] = []
-        mbti_types = ["Openness to experience", "Conscientiousness", "Extraversion", "Agreeableness", "Neuroticism"]
+        mbti_types = ["Openness to experience", "Conscientiousness",
+                      "Extraversion", "Agreeableness", "Neuroticism"]
         for i, mbti_type in enumerate(mbti_types):
             self.battle(i, mbti_type, task)
         self.chat_result['final_mbti'] = "".join(
             self.chat_result['final_mbti'])
+        self.chat_result['final_mbti'] = self.chat_result['final_mbti'].replace(
+            "H", "Y").replace("L", "N")
 
     @retry(wait=wait_random_exponential(min=1, max=60), stop=stop_after_attempt(0))
     @log_to_file
@@ -458,7 +477,10 @@ Use the following format for your response:
                 self.agent_dict['user_proxy'], self.agent_dict['Single'], task),
         ])
         circle_chats = chat[0].chat_history[1]['content']
+        print("start get mbti predict cot")
         temp = self.get_mbti_predict(circle_chats)
+        temp = [self.turn[x] for x in temp]
+        print(temp, "final_mbti")
         self.chat_result['final_mbti'] = "".join(temp)
 
     # 消融6

@@ -126,8 +126,6 @@ def judge_personality3(ocean_type, text):
     """
     high_explain = judge_personality1(ocean_type, text)
     low_explain = judge_personality2(ocean_type, text)
-    print(high_explain)
-    print(low_explain)
     lst = [high_explain, low_explain]
     random.shuffle(lst)
     explain_1, explain_2 = lst
@@ -136,7 +134,7 @@ def judge_personality3(ocean_type, text):
     usr_p = user_prompt.format(
         trait=ocean_type, text=text, explain_1=explain_1, explain_2=explain_2)
     response = openai_response(system_prompt=sys_p, prompt=usr_p)
-    return response
+    return response, {'high_explain': high_explain, 'low_explain': low_explain, 'final_judgement': response}
 
 
 class PADO:
@@ -147,20 +145,22 @@ class PADO:
         }
 
     def get_prediction(self, text):
+        turn = {"high": "Y", "low": "N"}
         text = re.findall(r'Final.*?Judgment:.*?(High|Low)', text)
         if text and text[0] in ['High', 'Low']:
-            return text[0]
+            answer = turn[text[0].lower()]
+            return answer
         else:
-            return random.choice(['High', 'Low'])
+            return random.choice(['Y', 'N'])
 
     def judge(self, text):
         ocean_types = ["Openness", "Conscientiousness",
                        "Extraversion", "Agreeableness", "Neuroticism"]
         final_mbti = ""
         for ocean_type in ocean_types:
-            respnse = judge_personality3(ocean_type, text)
-            self.chat_result['final_explain'][ocean_type] = respnse
-            final_mbti += self.get_prediction(respnse)
+            response, detail = judge_personality3(ocean_type, text)
+            self.chat_result['final_explain'][ocean_type] = detail
+            final_mbti += self.get_prediction(response)
         self.chat_result['final_mbti'] = final_mbti
 
 

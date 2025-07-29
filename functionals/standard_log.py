@@ -42,7 +42,10 @@ def log_to_file(func):
 def debug(json_data, json_name):
     config = ModelConfig()
     now = datetime.now().strftime("%Y%m%d")
-    with open(f"{config.file_path}/logs/debug/{json_name}_{now}.josn", "w") as f:
+    path = f"{config.file_path}/logs/debug/{json_name}_{now}.josn"
+    if not os.path.exists(os.path.dirname(path)):
+        os.makedirs(os.path.dirname(path))
+    with open(path, "w") as f:
         json.dump(json_data, f, indent=4)
 
 
